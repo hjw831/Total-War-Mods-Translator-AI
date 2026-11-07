@@ -80,6 +80,73 @@ void main() {
     expect((payload['options'] as Map)['num_predict'], 512);
   });
 
+  test('rejects partial translation responses', () async {
+    final dio = _MockDio();
+    final provider = OllamaProvider(
+      dio: dio,
+      tokenCalculator: FakeTokenCalculator(),
+    );
+    when(() => dio.post(
+          any(),
+          data: any(named: 'data'),
+          cancelToken: any(named: 'cancelToken'),
+        )).thenAnswer((_) async => Response<dynamic>(
+          data: {
+            'model': 'qwen3.5:9b',
+            'message': {
+              'role': 'assistant',
+              'content': jsonEncode({'unit_name': '창병'}),
+            },
+            'prompt_eval_count': 20,
+            'eval_count': 5,
+            'done': true,
+          },
+          statusCode: 200,
+          requestOptions: RequestOptions(path: '/api/chat'),
+        ));
+
+    final result = await provider.translate(_request(), '');
+
+    expect(result.isErr, isTrue);
+    expect(result.error.message, contains('unit_desc'));
+  });
+
+  test('accepts a wrapped translations object', () async {
+    final dio = _MockDio();
+    final provider = OllamaProvider(
+      dio: dio,
+      tokenCalculator: FakeTokenCalculator(),
+    );
+    when(() => dio.post(
+          any(),
+          data: any(named: 'data'),
+          cancelToken: any(named: 'cancelToken'),
+        )).thenAnswer((_) async => Response<dynamic>(
+          data: {
+            'model': 'qwen3.5:9b',
+            'message': {
+              'role': 'assistant',
+              'content': jsonEncode({
+                'translations': {
+                  'unit_name': '창병',
+                  'unit_desc': '튼튼한 보병 부대입니다.',
+                },
+              }),
+            },
+            'prompt_eval_count': 20,
+            'eval_count': 5,
+            'done': true,
+          },
+          statusCode: 200,
+          requestOptions: RequestOptions(path: '/api/chat'),
+        ));
+
+    final result = await provider.translate(_request(), '');
+
+    expect(result.isOk, isTrue);
+    expect(result.value.translations.keys, containsAll(['unit_name', 'unit_desc']));
+  });
+
   test('does not report streaming support', () {
     final provider = OllamaProvider(
       dio: _MockDio(),
