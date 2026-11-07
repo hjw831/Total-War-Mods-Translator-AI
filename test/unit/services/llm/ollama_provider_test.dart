@@ -147,6 +147,37 @@ void main() {
     expect(result.value.translations.keys, containsAll(['unit_name', 'unit_desc']));
   });
 
+  test('accepts an empty translation batch', () async {
+    final dio = _MockDio();
+    final provider = OllamaProvider(
+      dio: dio,
+      tokenCalculator: FakeTokenCalculator(),
+    );
+    when(() => dio.post(
+          any(),
+          data: any(named: 'data'),
+          cancelToken: any(named: 'cancelToken'),
+        )).thenAnswer((_) async => Response<dynamic>(
+          data: {
+            'model': 'qwen3.5:9b',
+            'message': {'role': 'assistant', 'content': '{}'},
+            'prompt_eval_count': 1,
+            'eval_count': 1,
+            'done': true,
+          },
+          statusCode: 200,
+          requestOptions: RequestOptions(path: '/api/chat'),
+        ));
+
+    final result = await provider.translate(
+      _request().copyWith(texts: const {}),
+      '',
+    );
+
+    expect(result.isOk, isTrue);
+    expect(result.value.translations, isEmpty);
+  });
+
   test('does not report streaming support', () {
     final provider = OllamaProvider(
       dio: _MockDio(),
