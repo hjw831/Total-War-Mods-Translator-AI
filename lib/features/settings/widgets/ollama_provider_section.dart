@@ -68,22 +68,31 @@ class _OllamaProviderSectionState extends ConsumerState<OllamaProviderSection> {
 
       final modelService = ref.read(llmModelManagementServiceProvider);
       var addedCount = 0;
+      final failures = <String>[];
       for (final modelId in installedModels) {
         final result = await modelService.addModelIfMissing(
           providerCode: 'ollama',
           modelId: modelId,
         );
         if (result.isErr) {
-          throw Exception(result.error.message);
+          failures.add('$modelId: ${result.error.message}');
+          continue;
         }
         if (result.value) addedCount++;
       }
 
+      // Refresh even if one model failed: earlier successful inserts must be
+      // visible rather than leaving the list stale after a partial sync.
       ref.invalidate(llmModelsProvider('ollama'));
-      if (mounted) {
+      if (mounted && failures.isNotEmpty) {
+        FluentToast.error(
+          context,
+          'Added $addedCount model(s), but some could not be registered: ${failures.join('; ')}',
+        );
+      } else if (mounted) {
         FluentToast.success(
           context,
-          'Found ${installedModels.length} installed model(s); added ${addedCount} new model(s). Enable a model below to use it.',
+          'Found ${installedModels.length} installed model(s); added $addedCount new model(s). Enable a model below to use it.',
         );
       }
     } catch (error) {
@@ -113,7 +122,7 @@ class _OllamaProviderSectionState extends ConsumerState<OllamaProviderSection> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Make sure Ollama is running and the model is installed. '
+              'Make sure Ollama is running. Sync installed models to add them to the list. '
               'The starter model is qwen3.5:9b; you can enable it below.',
               style: tokens.fontBody.copyWith(fontSize: 12, color: tokens.textDim),
             ),
