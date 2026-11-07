@@ -244,9 +244,13 @@ class OllamaProvider implements ILlmProvider {
 
   Map<String, String> _parseTranslations(String content, LlmRequest request) {
     var jsonText = content.trim();
-    final markdown = RegExp(r'```(?:json)?\\s*([\\s\\S]*?)\\s*```')
-        .firstMatch(jsonText);
-    if (markdown != null) jsonText = markdown.group(1)!.trim();
+    if (jsonText.startsWith('```')) {
+      final firstLine = jsonText.indexOf('\\n');
+      if (firstLine >= 0) jsonText = jsonText.substring(firstLine + 1);
+      if (jsonText.endsWith('```')) {
+        jsonText = jsonText.substring(0, jsonText.length - 3).trim();
+      }
+    }
 
     final decoded = jsonDecode(jsonText);
     if (decoded is! Map) {
