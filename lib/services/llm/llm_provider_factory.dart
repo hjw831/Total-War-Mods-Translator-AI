@@ -25,6 +25,7 @@ class LlmProviderFactory {
     _providers['deepseek'] = DeepSeekProvider();
     _providers['gemini'] = GeminiProvider();
     _providers['ollama'] = OllamaProvider();
+    _providers['ollama'] = OllamaProvider();
   }
 
   /// Get provider by code
