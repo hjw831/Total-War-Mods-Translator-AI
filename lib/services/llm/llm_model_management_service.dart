@@ -1,14 +1,16 @@
+import 'package:uuid/uuid.dart';
+
 import '../../models/common/result.dart';
 import '../../models/common/service_exception.dart';
 import '../../models/domain/llm_provider_model.dart';
 import '../../repositories/llm_provider_model_repository.dart';
 import '../shared/i_logging_service.dart';
-import 'package:uuid/uuid.dart';
 
 /// Service for managing LLM provider models.
 ///
-/// Models are seeded in the database via migration. This service handles
-/// model enabled/disabled/default status management.
+/// Models are seeded in the database via migration or discovered from
+/// providers at runtime. This service handles model registration and
+/// enabled/disabled/default status management.
 class LlmModelManagementService {
   final LlmProviderModelRepository _repository;
   final ILoggingService _logging;
