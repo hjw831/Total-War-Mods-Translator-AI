@@ -39,3 +39,25 @@ Provider만 추가하면 실제 앱에서는 사용할 수 없다. 서비스 계
 3. DB 마이그레이션과 모델 기본값 추가
 4. 설정 UI에 Ollama 전용 서버/모델 설정 연결
 5. 기존 Provider 인증/번역 회귀 테스트
+
+## 2026-11-07 — Ollama 첫 통합 구현
+
+### 구현
+- `OllamaProvider`: Ollama native `/api/chat` 비스트리밍 호출, JSON 응답 파싱, 태그/플레이스홀더 보존 지침, 토큰 사용량/처리 시간 매핑, 취소/네트워크/서버 오류 처리
+- Factory 기본 등록 및 reset 경로 등록
+- 번역 서비스의 API 키 필수 게이트에서 Ollama만 예외 처리
+- 연결 테스트에서 Ollama API 키 없이 `/api/tags`와 모델 설치 여부 확인
+- DB migration priority 270: Ollama Provider 및 `qwen3.5:9b` 모델 row 등록
+- Provider 설정 화면에 API 키 없는 Ollama 전용 섹션, 연결 테스트, DB 모델 목록 추가
+- Ollama provider/factory 단위 테스트 작성
+
+### 의도적으로 제한한 범위
+- 기본 주소는 `http://127.0.0.1:11434` 고정
+- 모델 자동 검색/추가 및 자동 다운로드 미구현
+- NDJSON 스트리밍 미구현
+- 원격 OpenAI 호환 엔드포인트 미구현
+
+### 검증
+- 원격 저장소 코드와 diff 검토만 수행.
+- 이 실행 환경에는 Flutter/Dart 실행 환경과 사용자의 로컬 Ollama 프로세스가 없어 `flutter analyze`, `flutter test`, 실제 번역 호출은 미실행.
+- 따라서 현재 상태는 구현 초안이며, PR 검토 및 CI 결과 확인이 필요함.
