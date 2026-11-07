@@ -220,16 +220,16 @@ class OllamaProvider implements ILlmProvider {
   String _buildSystemPrompt(LlmRequest request) {
     final parts = <String>[request.systemPrompt];
     if (request.gameContext != null) {
-      parts.add('\\n\\n## Game Context\\n${request.gameContext}');
+      parts.add('\n\n## Game Context\n${request.gameContext}');
     }
     if (request.projectContext != null) {
-      parts.add('\\n\\n## Project Context\\n${request.projectContext}');
+      parts.add('\n\n## Project Context\n${request.projectContext}');
     }
     if (request.glossaryTerms?.isNotEmpty == true) {
-      parts.add('\\n\\n## Glossary Terms\\n${request.glossaryTerms!.entries.map((e) => '- "${e.key}" → "${e.value}" (preserve exactly)').join('\\n')}');
+      parts.add('\n\n## Glossary Terms\n${request.glossaryTerms!.entries.map((e) => '- "${e.key}" → "${e.value}" (preserve exactly)').join('\n')}');
     }
     parts.add(
-      '\\n\\nCRITICAL: Preserve every game tag, formatting token, and placeholder exactly, '
+      '\n\nCRITICAL: Preserve every game tag, formatting token, and placeholder exactly, '
       'including [[col:red]], [%s], <tags>, and {{...}} expressions. '
       'Do not translate object keys. Return valid JSON only, with exactly the same keys '
       'as the input object and translated string values.',
@@ -240,12 +240,12 @@ class OllamaProvider implements ILlmProvider {
   String _buildUserMessage(LlmRequest request) =>
       'Translate the following text to ${request.targetLanguage}. '
       'Preserve all tags and placeholders exactly. Return only a JSON object '
-      'with the same keys:\\n${jsonEncode(request.texts)}';
+      'with the same keys:\n${jsonEncode(request.texts)}';
 
   Map<String, String> _parseTranslations(String content, LlmRequest request) {
     var jsonText = content.trim();
     if (jsonText.startsWith('```')) {
-      final firstLine = jsonText.indexOf('\\n');
+      final firstLine = jsonText.indexOf('\n');
       if (firstLine >= 0) jsonText = jsonText.substring(firstLine + 1);
       if (jsonText.endsWith('```')) {
         jsonText = jsonText.substring(0, jsonText.length - 3).trim();
