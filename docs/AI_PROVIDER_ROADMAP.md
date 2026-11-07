@@ -34,23 +34,23 @@
 - Provider 구조 조사
 - 구현 전 확인 항목과 테스트 기준 정의
 
-### 1 — Ollama 비스트리밍 Provider (진행 대상)
-- 별도 `OllamaProvider` 구현 및 Factory 등록
+### 1 — Ollama 비스트리밍 Provider (기본 연결 구현 완료, 검증 대기)
+- 별도 `OllamaProvider` 구현 및 Factory 등록 — 완료
 - 기본 주소 `http://127.0.0.1:11434`
-- Ollama native `/api/chat` 사용
-- `stream: false`, JSON 응답 형식 요청
-- API 키 없이 번역 요청
+- Ollama native `/api/chat` 사용 — 완료
+- `stream: false`, JSON 응답 형식 요청 — 완료
+- API 키 없이 번역 요청 — 서비스 인증 게이트 예외 처리 완료
 - 기존 태그/플레이스홀더 보존 프롬프트와 JSON 파싱 규칙 유지
-- 모델명은 요청의 `modelName` 사용
-- 연결 상태 및 오류 매핑 테스트
-- 스트리밍은 비활성화
+- 모델명은 요청의 `modelName` 사용 — 완료
+- 연결 상태 및 오류 매핑 테스트 — 단위 테스트 작성, 실행 대기
+- 스트리밍은 비활성화 — 완료
 
-### 2 — 설정 및 모델 관리 연결
-- DB 마이그레이션으로 Ollama Provider 및 기본 모델 레코드 추가
+### 2 — 설정 및 모델 관리 연결 (초기 연결 완료, 로컬 주소/모델 목록 개선은 후속)
+- DB 마이그레이션으로 Ollama Provider 및 `qwen3.5:9b` 시작 모델 레코드 추가 — 완료
 - Ollama 모델명 수동 입력/등록 흐름
 - 로컬 서버 주소 저장 및 연결 확인
-- 설정 UI에서 API 키 필드 제거, 서버/모델 관련 안내 제공
-- 키 없는 Provider를 허용하는 서비스 계층 처리
+- 설정 UI에 API 키 없는 Ollama 섹션, 기본 서버 주소 안내, 모델 목록 및 연결 테스트 추가 — 완료
+- 키 없는 Provider를 허용하는 서비스 계층 처리 — 완료
 - 기존 원격 Provider 설정/인증 회귀 테스트
 
 ### 3 — 선택적 확장
