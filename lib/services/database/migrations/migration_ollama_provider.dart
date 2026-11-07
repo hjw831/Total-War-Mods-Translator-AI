@@ -34,7 +34,7 @@ class OllamaProviderMigration extends Migration {
         INSERT OR IGNORE INTO translation_providers
         (id, code, name, api_endpoint, default_model, max_context_tokens, max_batch_size, rate_limit_rpm, rate_limit_tpm, is_active, created_at)
         VALUES
-        ('provider_ollama', 'ollama', 'Ollama (Local)', 'http://127.0.0.1:11434', 'qwen3.5:9b', 32768, 10, 60, NULL, 1, strftime('%s', 'now'))
+        ('provider_ollama', 'ollama', 'Ollama (Local)', 'http://127.0.0.1:11434', 'qwen3.5:9b', 32768, 10, 60, 0, 1, strftime('%s', 'now'))
       ''');
 
       await DatabaseService.execute('''
