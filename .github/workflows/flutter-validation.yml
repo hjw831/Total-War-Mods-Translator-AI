@@ -54,3 +54,6 @@ jobs:
 
       - name: Test provider factory
         run: flutter test test/services/llm/llm_provider_factory_test.dart
+
+      - name: Test Ollama model registration
+        run: flutter test test/unit/services/llm/llm_model_management_service_ollama_test.dart
