@@ -112,6 +112,20 @@ void main() {
         expect(result.error.message, contains('anthropic'));
       });
 
+      test('should allow cross-vendor model families under Ollama', () async {
+        final model = createTestModel(
+          id: 'ollama-gpt-oss',
+          providerCode: 'ollama',
+          modelId: 'gpt-oss:20b',
+        );
+
+        final result = await repository.insert(model);
+
+        expect(result.isOk, isTrue);
+        expect(result.value.providerCode, equals('ollama'));
+        expect(result.value.modelId, equals('gpt-oss:20b'));
+      });
+
       test('should fail when inserting duplicate ID', () async {
         final model = createTestModel();
         await repository.insert(model);
