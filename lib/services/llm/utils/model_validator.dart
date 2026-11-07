@@ -33,6 +33,13 @@ class LlmModelValidator {
     final normalizedProvider = providerCode.toLowerCase().trim();
     final normalizedModel = modelId.toLowerCase().trim();
 
+    // Ollama is a model runner, not a model family. It can host models from
+    // OpenAI, Anthropic, and other publishers, so provider-family prefix
+    // checks must not reject names such as "gpt-oss:20b".
+    if (normalizedProvider == 'ollama') {
+      return null;
+    }
+
     // Check if model has an exclusive prefix belonging to a different provider
     for (final entry in _exclusivePrefixes.entries) {
       final prefix = entry.key;
