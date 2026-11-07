@@ -260,6 +260,7 @@ class OllamaProvider implements ILlmProvider {
 
     final result = <String, String>{};
     final values = decoded['translations'];
+
     if (values is List) {
       for (final item in values) {
         if (item is Map) {
@@ -271,7 +272,10 @@ class OllamaProvider implements ILlmProvider {
         }
       }
     } else {
-      for (final entry in decoded.entries) {
+      // Accept both a direct {key: translation} object and a wrapped
+      // {"translations": {key: translation}} object.
+      final translationMap = values is Map ? values : decoded;
+      for (final entry in translationMap.entries) {
         if (entry.key is String &&
             entry.value is String &&
             request.texts.containsKey(entry.key)) {
@@ -280,8 +284,18 @@ class OllamaProvider implements ILlmProvider {
       }
     }
 
-    if (result.isEmpty && request.texts.isNotEmpty) {
-      throw FormatException('Ollama response contained no matching translation keys.');
+    // A partial response must never be reported as a successful batch:
+    // downstream code treats every returned translation as completed.
+    final missingKeys = request.texts.keys
+        .where((key) => !result.containsKey(key))
+        .toList(growable: false);
+    if (missingKeys.isNotEmpty) {
+      throw LlmResponseParseException(
+        'Ollama response is missing ${missingKeys.length} translation key(s): ${missingKeys.join(', ')}',
+        providerCode: providerCode,
+        rawResponse: content,
+        details: {'missingKeys': missingKeys},
+      );
     }
     return result;
   }
