@@ -107,3 +107,16 @@ Provider만 추가하면 실제 앱에서는 사용할 수 없다. 서비스 계
 - Ollama 모델 다운로드/삭제는 수행하지 않음
 - 서버 주소는 여전히 기본 loopback 주소로 고정
 - 실제 Ollama 서버 및 Flutter 테스트 결과는 자동 실행 기록을 확인한 뒤 업데이트
+
+## 2026-11-07 — Ollama 모델 ID 검증 예외
+
+### 발견
+- 공통 모델 검증기는 `gpt`, `claude`, `deepl` 접두어를 각 Provider 전용으로 간주한다.
+- Ollama는 모델 실행 런타임이므로 `gpt-oss:20b`처럼 다른 공급자 계열의 모델 이름도 정상적으로 사용할 수 있다.
+- 기존 규칙을 그대로 적용하면 Ollama에 설치된 일부 모델이 앱 DB에 등록되지 않을 수 있다.
+
+### 조치
+- Ollama Provider에 한해 공급자 계열 접두어 검사를 건너뛰도록 수정.
+- 공통 모델 검증의 빈 Provider/빈 모델 ID 검사는 계속 유지.
+- Repository 통합 테스트에 `gpt-oss:20b` 등록 케이스 추가.
+- Flutter validation workflow에 Repository 테스트 실행 단계 추가.
