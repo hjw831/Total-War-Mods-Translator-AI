@@ -4,6 +4,7 @@ import 'package:twmt/services/llm/providers/openai_provider.dart';
 import 'package:twmt/services/llm/providers/deepl_provider.dart';
 import 'package:twmt/services/llm/providers/deepseek_provider.dart';
 import 'package:twmt/services/llm/providers/gemini_provider.dart';
+import 'package:twmt/services/llm/providers/ollama_provider.dart';
 import 'package:twmt/services/llm/models/llm_exceptions.dart';
 
 /// Factory for creating LLM provider instances
@@ -23,6 +24,7 @@ class LlmProviderFactory {
     _providers['deepl'] = DeepLProvider();
     _providers['deepseek'] = DeepSeekProvider();
     _providers['gemini'] = GeminiProvider();
+    _providers['ollama'] = OllamaProvider();
   }
 
   /// Get provider by code
