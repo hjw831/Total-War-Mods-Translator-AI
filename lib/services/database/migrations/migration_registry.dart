@@ -38,6 +38,7 @@ import 'migration_contentless_fts_version_id.dart';
 import 'migration_glossary_entries_updated_at_trigger_scope.dart';
 import 'migration_fix_workshop_template_json.dart';
 import 'migration_llm_models_2026_08.dart';
+import 'migration_ollama_provider.dart';
 
 /// Registry of all database migrations.
 ///
@@ -88,6 +89,7 @@ class MigrationRegistry {
       GlossaryEntriesUpdatedAtTriggerScopeMigration(), // Priority 240 — restrict trg_glossary_entries_updated_at to content columns so usage bumps don't force DeepL resync
       FixWorkshopTemplateJsonMigration(), // Priority 250 — unwrap JSON-localized Workshop templates ({"fr":...}) that crash steamcmd's VDF parser
       LlmModels202608Migration(), // Priority 260 — add GPT-5.6 Terra / 5.4 nano, Claude Sonnet 5 / Opus 5, Gemini 3.5 / 3.6; archive the Gemini 3 previews
+      OllamaProviderMigration(), // Priority 270 — register local Ollama and starter model
     ];
 
     // Sort by priority (lower numbers first)
