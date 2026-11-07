@@ -320,8 +320,9 @@ class LlmProviderSettings extends _$LlmProviderSettings {
       final provider = providerFactory.getProvider(providerCode);
       logging.debug('Provider instance obtained', {'providerName': provider.providerName});
 
+      final effectiveApiKey = apiKey ?? '';
       logging.debug('Calling validateApiKey', {'model': effectiveModel});
-      final result = await provider.validateApiKey(apiKey, model: effectiveModel);
+      final result = await provider.validateApiKey(effectiveApiKey, model: effectiveModel);
       logging.debug('validateApiKey returned', {'isOk': result.isOk});
 
       if (result.isOk) {
