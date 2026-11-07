@@ -3,6 +3,7 @@ import '../../models/common/service_exception.dart';
 import '../../models/domain/llm_provider_model.dart';
 import '../../repositories/llm_provider_model_repository.dart';
 import '../shared/i_logging_service.dart';
+import 'package:uuid/uuid.dart';
 
 /// Service for managing LLM provider models.
 ///
@@ -55,6 +56,70 @@ class LlmModelManagementService {
   Future<Result<LlmProviderModel?, TWMTDatabaseException>> getGlobalDefaultModel() async {
     _logging.debug('[LlmModelManagement] Getting global default model');
     return await _repository.getGlobalDefault();
+  }
+
+  /// Adds a provider model only when it is not already registered.
+  ///
+  /// Newly discovered models are disabled by default. Existing model
+  /// preferences (enabled/default/archive state) are never overwritten.
+  /// Returns true when a new row was created, false when it already existed.
+  Future<Result<bool, ServiceException>> addModelIfMissing({
+    required String providerCode,
+    required String modelId,
+  }) async {
+    final normalizedModelId = modelId.trim();
+    if (providerCode.trim().isEmpty || normalizedModelId.isEmpty) {
+      return Err(ServiceException('Provider code and model ID are required.'));
+    }
+
+    final existingResult = await _repository.getByProviderAndModelId(
+      providerCode,
+      normalizedModelId,
+    );
+    if (existingResult.isErr) {
+      final error = existingResult.unwrapErr();
+      return Err(ServiceException(
+        'Could not check whether model already exists: ${error.message}',
+        error: error,
+      ));
+    }
+
+    if (existingResult.unwrap() != null) {
+      return const Ok(false);
+    }
+
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final model = LlmProviderModel(
+      id: const Uuid().v4(),
+      providerCode: providerCode,
+      modelId: normalizedModelId,
+      displayName: normalizedModelId,
+      isEnabled: false,
+      isDefault: false,
+      isArchived: false,
+      createdAt: now,
+      updatedAt: now,
+      lastFetchedAt: now,
+    );
+
+    final insertResult = await _repository.insert(model);
+    if (insertResult.isErr) {
+      final error = insertResult.unwrapErr();
+      _logging.warning(
+        '[LlmModelManagement] Failed to register discovered model',
+        {'providerCode': providerCode, 'modelId': normalizedModelId, 'error': error.message},
+      );
+      return Err(ServiceException(
+        'Could not register model "$normalizedModelId": ${error.message}',
+        error: error,
+      ));
+    }
+
+    _logging.info(
+      '[LlmModelManagement] Registered discovered model',
+      {'providerCode': providerCode, 'modelId': normalizedModelId},
+    );
+    return const Ok(true);
   }
 
   /// Enable a model for use.
