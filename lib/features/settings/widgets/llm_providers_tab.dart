@@ -10,6 +10,7 @@ import '../../../widgets/common/fluent_spinner.dart';
 import 'package:twmt/providers/settings_providers.dart';
 import 'llm_provider_section.dart';
 import 'llm_custom_rules_section.dart';
+import 'ollama_provider_section.dart';
 
 /// LLM Providers tab for configuring API keys and provider settings.
 class LlmProvidersTab extends ConsumerStatefulWidget {
@@ -182,6 +183,10 @@ class _LlmProvidersTabState extends ConsumerState<LlmProvidersTab> {
                 update: ref.read(llmProviderSettingsProvider.notifier).updateGeminiApiKey,
               ),
             ),
+            const SizedBox(height: 16),
+
+            // Local Ollama (no API key required)
+            const OllamaProviderSection(),
             const SizedBox(height: 24),
 
             // Custom Translation Rules Section

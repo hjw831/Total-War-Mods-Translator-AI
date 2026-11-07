@@ -279,13 +279,17 @@ class LlmProviderSettings extends _$LlmProviderSettings {
           apiKey = await _secureStorage.read(key: SettingsKeys.geminiApiKey);
           logging.debug('Gemini API key loaded', {'hasKey': apiKey != null});
           break;
+        case 'ollama':
+          // Local Ollama does not use API-key authentication.
+          apiKey = '';
+          break;
         default:
           logging.warning('Unknown provider', {'providerCode': providerCode});
           return (false, 'Unknown provider');
       }
 
       // Check if API key exists
-      if (apiKey == null || apiKey.isEmpty) {
+      if (providerCode != 'ollama' && (apiKey == null || apiKey.isEmpty)) {
         logging.debug('No API key configured', {'providerCode': providerCode});
         return (false, 'No API key configured');
       }
@@ -316,8 +320,9 @@ class LlmProviderSettings extends _$LlmProviderSettings {
       final provider = providerFactory.getProvider(providerCode);
       logging.debug('Provider instance obtained', {'providerName': provider.providerName});
 
+      final effectiveApiKey = apiKey ?? '';
       logging.debug('Calling validateApiKey', {'model': effectiveModel});
-      final result = await provider.validateApiKey(apiKey, model: effectiveModel);
+      final result = await provider.validateApiKey(effectiveApiKey, model: effectiveModel);
       logging.debug('validateApiKey returned', {'isOk': result.isOk});
 
       if (result.isOk) {
@@ -430,7 +435,7 @@ class LlmModels extends _$LlmModels {
   ///
   /// Excludes the current provider to avoid self-invalidation error.
   void _invalidateAllProviderModels() {
-    const providers = ['anthropic', 'openai', 'deepl', 'deepseek', 'gemini'];
+    const providers = ['anthropic', 'openai', 'deepl', 'deepseek', 'gemini', 'ollama'];
     for (final provider in providers) {
       // Skip current provider to avoid self-invalidation error
       if (provider != providerCode) {

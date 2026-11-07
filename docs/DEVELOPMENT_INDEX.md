@@ -30,3 +30,7 @@
 
 ## 첫 구현 후보
 Ollama 로컬 Provider를 기존 Provider 인터페이스에 연결하는 최소 수직 기능(vertical slice). 모델 자동 검색, 고급 설정, 멀티 Provider 자동 라우팅은 첫 구현에 포함하지 않는다.
+
+## Ollama 사용 안내
+
+- `docs/OLLAMA_SETUP.md`: 로컬 Ollama 실행, 모델 확인, 앱 설정 및 기본 문제 해결.

@@ -72,7 +72,7 @@ class LlmServiceImpl implements ILlmService {
       final providerCode = request.providerCode ?? await getActiveProviderCode();
       final apiKey = await _getApiKey(providerCode);
 
-      if (apiKey.isEmpty) {
+      if (apiKey.isEmpty && providerCode != 'ollama') {
         return Err(
           LlmAuthenticationException(
             'API key not configured for provider: $providerCode',
@@ -375,7 +375,7 @@ class LlmServiceImpl implements ILlmService {
     String? model,
   }) async {
     try {
-      if (apiKey.isEmpty) {
+      if (apiKey.isEmpty && providerCode != 'ollama') {
         return Err(
           LlmAuthenticationException(
             'API key cannot be empty',
@@ -501,7 +501,7 @@ class LlmServiceImpl implements ILlmService {
 
       // Get API key
       final apiKey = await _getApiKey(providerCode);
-      if (apiKey.isEmpty) {
+      if (apiKey.isEmpty && providerCode != 'ollama') {
         yield Err(
           LlmAuthenticationException(
             'API key not configured for provider: $providerCode',
