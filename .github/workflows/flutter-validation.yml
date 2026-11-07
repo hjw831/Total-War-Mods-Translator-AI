@@ -57,3 +57,6 @@ jobs:
 
       - name: Test Ollama model registration
         run: flutter test test/unit/services/llm/llm_model_management_service_ollama_test.dart
+
+      - name: Test model repository validation
+        run: flutter test test/unit/repositories/llm_provider_model_repository_test.dart
