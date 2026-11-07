@@ -61,3 +61,21 @@ Provider만 추가하면 실제 앱에서는 사용할 수 없다. 서비스 계
 - 원격 저장소 코드와 diff 검토만 수행.
 - 이 실행 환경에는 Flutter/Dart 실행 환경과 사용자의 로컬 Ollama 프로세스가 없어 `flutter analyze`, `flutter test`, 실제 번역 호출은 미실행.
 - 따라서 현재 상태는 구현 초안이며, PR 검토 및 CI 결과 확인이 필요함.
+
+## 2026-11-07 — Flutter 자동 검증 기반 추가
+
+### 수행
+- Flutter/Dart 분석과 Ollama Provider 테스트를 자동 실행하는 GitHub Actions workflow 추가
+- PR #3 `ci: add Flutter validation workflow` 병합
+- Workflow: `.github/workflows/flutter-validation.yml`
+
+### 검증 순서
+1. Flutter stable 설치 및 의존성 설치
+2. Slang / Riverpod 코드 생성
+3. `flutter analyze`
+4. Ollama Provider 단위 테스트
+5. Provider Factory 단위 테스트
+
+### 현재 상태
+- PR #2의 새 커밋으로 자동 검증을 실행하고 결과를 확인할 예정.
+- 실제 Windows Ollama 서버 연결 및 번역은 사용자 PC 환경에서 별도 확인이 필요함.
