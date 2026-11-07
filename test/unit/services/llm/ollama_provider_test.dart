@@ -178,6 +178,49 @@ void main() {
     expect(result.value.translations, isEmpty);
   });
 
+  test('lists unique installed model tags in sorted order', () async {
+    final dio = _MockDio();
+    final provider = OllamaProvider(
+      dio: dio,
+      tokenCalculator: FakeTokenCalculator(),
+    );
+    when(() => dio.get(any())).thenAnswer((_) async => Response<dynamic>(
+          data: {
+            'models': [
+              {'name': 'zeta:latest', 'model': 'zeta:latest'},
+              {'name': 'qwen3.5:9b'},
+              {'model': 'alpha:latest'},
+              {'name': 'qwen3.5:9b'},
+            ],
+          },
+          statusCode: 200,
+          requestOptions: RequestOptions(path: '/api/tags'),
+        ));
+
+    final result = await provider.getInstalledModels();
+
+    expect(result.isOk, isTrue);
+    expect(result.value, ['alpha:latest', 'qwen3.5:9b', 'zeta:latest']);
+  });
+
+  test('rejects an invalid installed model list response', () async {
+    final dio = _MockDio();
+    final provider = OllamaProvider(
+      dio: dio,
+      tokenCalculator: FakeTokenCalculator(),
+    );
+    when(() => dio.get(any())).thenAnswer((_) async => Response<dynamic>(
+          data: {'items': []},
+          statusCode: 200,
+          requestOptions: RequestOptions(path: '/api/tags'),
+        ));
+
+    final result = await provider.getInstalledModels();
+
+    expect(result.isErr, isTrue);
+    expect(result.error.message, contains('model list was invalid'));
+  });
+
   test('does not report streaming support', () {
     final provider = OllamaProvider(
       dio: _MockDio(),
