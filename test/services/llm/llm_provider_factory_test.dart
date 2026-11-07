@@ -27,10 +27,10 @@ void main() {
     expect(LlmProviderFactory(), same(LlmProviderFactory()));
   });
 
-  test('pre-registers the five built-in providers', () {
+  test('pre-registers the six built-in providers', () {
     expect(
       factory.getAvailableProviders(),
-      containsAll(['anthropic', 'openai', 'deepl', 'deepseek', 'gemini']),
+      containsAll(['anthropic', 'openai', 'deepl', 'deepseek', 'gemini', 'ollama']),
     );
   });
 
@@ -74,6 +74,6 @@ void main() {
     expect(factory.getAvailableProviders(), isEmpty);
 
     factory.resetToDefaults();
-    expect(factory.getAvailableProviders(), hasLength(5));
+    expect(factory.getAvailableProviders(), hasLength(6));
   });
 }
