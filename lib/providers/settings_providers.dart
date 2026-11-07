@@ -294,9 +294,11 @@ class LlmProviderSettings extends _$LlmProviderSettings {
         return (false, 'No API key configured');
       }
 
-      // Get the first enabled model for this provider (required for validation)
+      // Remote providers need a model for their minimal validation request.
+      // Ollama can validate the local server independently; model discovery is
+      // handled by the dedicated "Sync installed models" action.
       String? effectiveModel;
-      if (providerCode != 'deepl') {
+      if (providerCode != 'deepl' && providerCode != 'ollama') {
         final modelService = ref.read(llmModelManagementServiceProvider);
         final modelsResult = await modelService.getEnabledModelsByProvider(providerCode);
         if (modelsResult.isOk) {

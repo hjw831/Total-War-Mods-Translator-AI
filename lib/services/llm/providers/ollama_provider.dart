@@ -129,44 +129,62 @@ class OllamaProvider implements ILlmProvider {
   int estimateRequestTokens(LlmRequest request) =>
       _tokenCalculator.estimateRequestTokens(request);
 
-  @override
-  Future<Result<bool, LlmProviderException>> validateApiKey(
-    String apiKey, {
-    String? model,
-  }) async {
+  /// Returns the model tags currently installed in the local Ollama server.
+  ///
+  /// The returned names are suitable for use as `LlmRequest.modelName`.
+  Future<Result<List<String>, LlmProviderException>> getInstalledModels() async {
     try {
       final response = await _dio.get('/api/tags');
-      final models = (response.data as Map<String, dynamic>)['models'];
-      if (models is! List) {
+      final data = response.data;
+      if (data is! Map || data['models'] is! List) {
         return Err(LlmNetworkException(
           'Ollama responded, but its model list was invalid.',
           providerCode: providerCode,
         ));
       }
 
-      if (model != null && model.trim().isNotEmpty) {
-        final exists = models.any((entry) =>
-            entry is Map &&
-            (entry['name'] == model || entry['model'] == model));
-        if (!exists) {
-          return Err(LlmInvalidRequestException(
-            'Model "$model" is not installed in Ollama. Pull it with "ollama pull $model".',
-            providerCode: providerCode,
-            code: 'MODEL_NOT_FOUND',
-          ));
+      final names = <String>{};
+      for (final entry in data['models'] as List) {
+        if (entry is! Map) continue;
+        final name = entry['name'] ?? entry['model'];
+        if (name is String && name.trim().isNotEmpty) {
+          names.add(name.trim());
         }
       }
-      return const Ok(true);
+
+      final sortedNames = names.toList()..sort();
+      return Ok(sortedNames);
     } on DioException catch (error) {
       return Err(_handleDioException(error));
     } catch (error, stackTrace) {
       return Err(LlmProviderException(
-        'Could not validate the local Ollama server: $error',
+        'Could not retrieve installed Ollama models: $error',
         providerCode: providerCode,
-        code: 'VALIDATION_ERROR',
+        code: 'MODEL_LIST_ERROR',
         stackTrace: stackTrace,
       ));
     }
+  }
+
+  @override
+  Future<Result<bool, LlmProviderException>> validateApiKey(
+    String apiKey, {
+    String? model,
+  }) async {
+    final result = await getInstalledModels();
+    if (result.isErr) return Err(result.error);
+
+    if (model != null &&
+        model.trim().isNotEmpty &&
+        !result.value.contains(model.trim())) {
+      return Err(LlmInvalidRequestException(
+        'Model "$model" is not installed in Ollama. Pull it with "ollama pull $model".',
+        providerCode: providerCode,
+        code: 'MODEL_NOT_FOUND',
+      ));
+    }
+
+    return const Ok(true);
   }
 
   @override
@@ -190,12 +208,11 @@ class OllamaProvider implements ILlmProvider {
 
   @override
   Future<Result<bool, LlmProviderException>> isAvailable() async {
-    try {
-      final response = await _dio.get('/api/tags');
-      return Ok(response.statusCode == 200);
-    } on DioException catch (error) {
-      return Err(_handleDioException(error));
-    }
+    final result = await getInstalledModels();
+    return result.when(
+      ok: (_) => const Ok(true),
+      err: (error) => Err(error),
+    );
   }
 
   @override
