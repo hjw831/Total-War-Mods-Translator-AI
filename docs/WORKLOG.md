@@ -120,3 +120,21 @@ Provider만 추가하면 실제 앱에서는 사용할 수 없다. 서비스 계
 - 공통 모델 검증의 빈 Provider/빈 모델 ID 검사는 계속 유지.
 - Repository 통합 테스트에 `gpt-oss:20b` 등록 케이스 추가.
 - Flutter validation workflow에 Repository 테스트 실행 단계 추가.
+
+## 2026-11-07 — Ollama 모델 동기화 및 검증 보완 병합
+
+### 병합
+- PR #2 — Ollama 비스트리밍 Provider: `90a10409e93796fab55fc060058b112149b93188`
+- PR #3 — Flutter validation workflow: `c2327702845c7cbd96bc540478e68e089c5dfc4e`
+- PR #4 — 설치 모델 동기화: `7c524c6869d082a35deeb2bd6f5fed5254914b66`
+- PR #5 — Ollama 제3자 모델 ID 허용: `6441d68709dd36f055757fd6ab5d1abc369c8a9b`
+
+### 검증 상태
+- Ollama Provider, 설치 모델 조회, 모델 DB 등록, 공급자별 모델명 검증에 대한 단위/통합 테스트를 추가했다.
+- GitHub connector에서 해당 PR head의 workflow 실행 결과를 확인하지 못했다. 테스트 통과로 간주하지 않는다.
+- 이 실행 환경에는 Flutter/Dart SDK가 없어 직접 분석/테스트하지 못했다.
+- Windows Ollama 연결 및 실제 번역은 별도 실행 검증이 남아 있다.
+
+### 현재 다음 단계
+- 실제 앱에서 Ollama 서버 연결, 설치 모델 동기화, 모델 활성화, 짧은 번역을 순서대로 검증한다.
+- 사용자 지정 Base URL은 실제 사용 필요성이 확인되면 별도 작은 기능으로 진행한다.
