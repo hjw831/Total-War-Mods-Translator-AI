@@ -17,7 +17,7 @@
 - 원본 설치 폴더, 원본 사용자 데이터, 원본 DB를 복사·초기화·수정하지 않는다.
 - 테스트판은 별도 앱 데이터 루트를 사용한다. 기본 제안 경로는 `%APPDATA%\TWMT_AI_Test`이며 DB, config, logs, cache를 모두 이 루트 아래로 모은다.
 - 테스트판에서 원본 데이터 경로로 fallback하는 동작은 금지한다. 격리 경로를 결정할 수 없으면 시작을 중단하고 명확한 오류를 표시한다.
-- 기존 설치판과 다른 앱 식별자/제품 이름/설치 프로그램 ID를 사용한다.
+- 테스트판은 원본과 다른 Windows runner 식별자/제품 이름/실행 파일 이름을 사용한다. ZIP 방식이므로 기존 Inno Setup ID는 변경하지 않고 사용하지도 않는다.
 - 기존 API 키·자격 증명을 가져오거나 덮어쓰지 않는다. Windows secure storage의 실제 키 네임스페이스를 조사하고 테스트판 전용 분리를 보장한다.
 - Ollama는 기존 로컬 서버(`127.0.0.1:11434`)를 사용하되, 테스트판의 앱 설정·DB만 별도로 유지한다.
 - 테스트판은 우선 수동 배포용 ZIP/폴더 패키지로 제공한다. 기존 앱을 덮어쓰는 설치 프로그램은 격리 검증 이후 별도 판단한다.
@@ -28,13 +28,13 @@
 - `TWMT_ISOLATED_TEST_BUILD` compile-time define 또는 동등한 명시적 빌드 플래그를 도입한다.
 - 격리 빌드에서는 디버그/릴리스 모드와 무관하게 전용 AppData 루트를 강제한다.
 - DB, config, logs, cache 경로가 모두 테스트 전용인지 검증하는 단위 테스트를 추가한다.
-- secure storage 생성 지점과 Windows 플러그인의 Credential Manager 키 구성을 조사한다. 테스트판이 원본 API 키를 읽거나 쓰지 않도록 namespace를 분리한다.
+- secure storage 생성 지점과 Windows 플러그인의 저장 경로를 조사한다. Application Support 경로를 runner VERSIONINFO로 분리하고 구형 Credential Manager 호환 이전은 비활성화한다.
 - 격리 플래그가 없는 기존 빌드의 데이터 경로는 변경하지 않는다.
 
 ### W2 — Windows 실행 프로젝트 및 식별자
 - Flutter Windows runner를 수동 빌드 workflow의 임시 CI 작업공간에서 재현 가능하게 생성한다. runner 원본은 현재 저장소에 커밋하지 않는다.
 - 창 제목, 파일 제품 정보, 실행 파일 이름을 테스트판으로 구분한다.
-- 원본과 다른 설치 프로그램 ID를 사용한다. 테스트 단계에서는 원본 설치 프로그램을 실행하거나 갱신하지 않는다.
+- runner VERSIONINFO와 실행 파일 이름을 원본과 분리한다. 테스트 단계에서는 원본 설치 프로그램을 실행하거나 갱신하지 않는다.
 
 ### W3 — 수동 Windows 빌드
 - GitHub Actions에 `workflow_dispatch` 전용 Windows 빌드 작업을 추가한다.
