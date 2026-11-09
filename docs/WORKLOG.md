@@ -215,3 +215,5 @@ Provider만 추가하면 실제 앱에서는 사용할 수 없다. 서비스 계
 - 조사 결과 `path_provider_windows`는 VERSIONINFO의 `CompanyName\\ProductName`으로 Application Support 경로를 만들며, `flutter_secure_storage_windows`와 `shared_preferences_windows`는 이 경로를 사용한다. 따라서 이 runner 식별자 분리는 두 저장소 모두를 원본과 분리하는 데 필요하다.
 - `.github/workflows/windows-isolated-test-build.yml` 추가. `workflow_dispatch` 전용이며, CI 임시 공간에서 Windows runner를 생성하고 격리 식별자를 적용한 뒤 Release ZIP artifact를 만드는 구조다.
 - 이 workflow는 아직 실행하지 않았다. 빌드 산출물/경로/실행은 검증 전이다. 기존 Inno Setup 설정과 설치판은 변경하지 않는다.
+
+- 프로젝트 혼동 방지: `docs/DEVELOPMENT_INDEX.md`에 새 채팅 재개 체크리스트를 추가했다. 작업 전 저장소명/브랜치/업무일지를 확인하고, 다른 GPT 프로젝트의 코드나 업무기록을 섞지 않도록 명시했다.
