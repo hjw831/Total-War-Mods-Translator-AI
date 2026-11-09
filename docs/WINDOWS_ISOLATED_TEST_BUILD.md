@@ -74,13 +74,13 @@
 - 격리 빌드에서는 Windows 창 제목과 Flutter 앱 제목을 `TWMT AI Test`로 표시한다.
 - 전용 경로 계산 및 빈 APPDATA 거부 단위 테스트를 추가했다.
 
-### 아직 격리 검증이 끝나지 않은 항목
+### 자동 검증 결과 (2026-11-09)\n- PR #6 최신 커밋 `f98029659f6e3a5efd76249b231f9dc7e04ca474`의 GitHub Actions run #44 (`42558750011`)가 `completed / success`로 종료됐다.\n- Flutter 설정/의존성 설치, 코드 생성, 변경 Dart 파일 분석, Ollama Provider/Factory/모델 등록/Repository 테스트, 격리 데이터 경로 정책 테스트가 모두 통과했다.\n- 이 결과는 Windows Release 빌드나 Windows 런타임 검증을 대체하지 않는다.\n\n### 아직 격리 검증이 끝나지 않은 항목
 - Secure storage와 shared_preferences는 Windows `path_provider`의 Application Support 경로를 사용한다. 수동 빌드 workflow가 runner VERSIONINFO의 CompanyName/ProductName을 분리해 이 저장소 경로를 원본과 다르게 설정한다.
 - Windows runner 소스는 저장소에 직접 추가하지 않고 수동 빌드 workflow가 임시 CI 작업공간에서 생성한다. 따라서 로컬 Windows 실행은 아직 불가능하지만, workflow를 통한 ZIP 산출 경로는 준비됐다.
 - 코드 전체 경로 재검토에서 `FileWatchService`와 `FileService`의 직접 path_provider 조회를 추가 발견해 중앙 정책으로 수정했다.
 - 첫 PR 검증에서 `LoggingService`의 로그 파일명에 쓰는 `path.join` import 누락을 발견해 복구했다.
 - 전체 저장소 분석은 변경 파일과 무관한 기존 warning 20건도 실패 처리하므로, validation workflow의 분석 대상을 PR에서 변경된 Dart 파일로 한정했다. 이 변경의 새 CI 결과는 아직 대기 중이다.
-- GitHub Actions 또는 로컬 Windows 환경에서 테스트/빌드를 아직 실행하지 않았다. 실제 산출물과 경로는 검증 대기 상태다.
+- Flutter 자동 검증은 통과했지만, GitHub Actions의 수동 Windows ZIP workflow는 아직 실행하지 않았다. 실제 산출물과 Windows 경로는 검증 대기 상태다.
 
 ### W1 완료 기준
 - [x] DB/config 전용 루트
@@ -105,4 +105,4 @@
 - 전용 브랜치 `feature/windows-isolated-test-build` 생성 완료.
 - 위 위험 요소는 GitHub `main`의 `database_config.dart`, `pubspec.yaml`, `lib/main.dart`, workflow 파일을 확인해 기록했다.
 - Windows runner는 수동 빌드 workflow가 CI 작업공간에서 생성하도록 구성했다. 저장소에 runner 원본을 커밋하지 않았다.
-- 수동 Windows ZIP 빌드 workflow는 추가했지만 아직 실행하지 않았다.
+- 수동 Windows ZIP 빌드 workflow는 추가했지만 아직 실행하지 않았다. 자동 검증은 PR #6 run #44에서 통과했다.
