@@ -207,3 +207,6 @@ Provider만 추가하면 실제 앱에서는 사용할 수 없다. 서비스 계
 2. Secure storage와 shared_preferences가 별도 application support 경로를 사용하는지 확인한다.
 3. 테스트판 전용 ZIP 산출 workflow를 추가한다.
 4. Windows 환경에서 테스트판/기존 앱을 함께 실행해 DB, 설정, API 키가 서로 보이지 않는지 확인한다.
+
+- 추가 조치: 격리 define이 켜진 실행 파일은 창 제목과 앱 제목을 `TWMT AI Test`로 표시한다.
+- 테스트 명령은 격리 define 없이 실행해야 한다. define은 Windows 테스트 앱 빌드에만 전달하며, 비-Windows 환경에서는 안전하게 거부한다.
