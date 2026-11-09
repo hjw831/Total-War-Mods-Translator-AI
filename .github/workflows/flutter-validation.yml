@@ -69,7 +69,7 @@ jobs:
           if [ "${#changed_dart_files[@]}" -eq 0 ]; then
             echo "No changed Dart files to analyze."
           else
-            printf 'Analyzing changed Dart files:\\n%s\\n' "${changed_dart_files[@]}"
+            printf '%s\\n' "Analyzing changed Dart files:" "${changed_dart_files[@]}"
             flutter analyze "${changed_dart_files[@]}"
           fi
 
