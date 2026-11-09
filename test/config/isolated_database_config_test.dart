@@ -25,7 +25,7 @@ void main() {
         throwsArgumentError,
       );
     });
- 
+
     test('uses the documented isolated directory name', () {
       expect(DatabaseConfig.isolatedAppDirectoryName, 'TWMT_AI_Test');
     });
