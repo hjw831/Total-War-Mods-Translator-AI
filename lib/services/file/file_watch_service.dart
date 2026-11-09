@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 import 'package:watcher/watcher.dart';
 import 'package:twmt/config/database_config.dart';
 import 'package:twmt/models/common/result.dart';
@@ -364,24 +363,15 @@ class FileWatchService {
   ///
   /// Returns path to AppData\Local\TWMT\logs
   Future<String> getLogsDirectory() async {
-    final dir = await getApplicationCacheDirectory();
-    final logsDir = Directory(path.join(dir.path, 'logs'));
-    if (!await logsDir.exists()) {
-      await logsDir.create(recursive: true);
-    }
-    return logsDir.path;
+    return DatabaseConfig.getLogsDirectory();
   }
 
   /// Get application cache directory
   ///
-  /// Returns path to AppData\Local\TWMT\cache
+  /// Returns path to AppData\\Local\\TWMT\\cache in ordinary builds and
+  /// the isolated test root in TWMT AI Test builds.
   Future<String> getCacheDirectory() async {
-    final dir = await getApplicationCacheDirectory();
-    final cacheDir = Directory(path.join(dir.path, 'cache'));
-    if (!await cacheDir.exists()) {
-      await cacheDir.create(recursive: true);
-    }
-    return cacheDir.path;
+    return DatabaseConfig.getCacheDirectory();
   }
 
   /// Get temporary directory

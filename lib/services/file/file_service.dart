@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:twmt/config/database_config.dart';
 import '../../models/common/result.dart';
@@ -61,14 +60,8 @@ class FileService {
   /// Creates the directory if it doesn't exist.
   Future<Result<String, FileSystemException>> getLogsDirectory() async {
     try {
-      final dir = await getApplicationCacheDirectory();
-      final logsDir = Directory(path.join(dir.path, 'logs'));
-
-      if (!await logsDir.exists()) {
-        await logsDir.create(recursive: true);
-      }
-
-      return Ok(logsDir.path);
+      final logsDir = await DatabaseConfig.getLogsDirectory();
+      return Ok(logsDir);
     } catch (e, stackTrace) {
       return Err(
         FileSystemException(
@@ -83,18 +76,11 @@ class FileService {
 
   /// Get the cache directory.
   ///
-  /// Returns: AppData\Local\TWMT\cache
   /// Creates the directory if it doesn't exist.
   Future<Result<String, FileSystemException>> getCacheDirectory() async {
     try {
-      final dir = await getApplicationCacheDirectory();
-      final cacheDir = Directory(path.join(dir.path, 'cache'));
-
-      if (!await cacheDir.exists()) {
-        await cacheDir.create(recursive: true);
-      }
-
-      return Ok(cacheDir.path);
+      final cacheDir = await DatabaseConfig.getCacheDirectory();
+      return Ok(cacheDir);
     } catch (e, stackTrace) {
       return Err(
         FileSystemException(

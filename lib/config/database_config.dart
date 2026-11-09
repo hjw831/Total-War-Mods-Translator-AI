@@ -32,6 +32,35 @@ class DatabaseConfig {
   /// test/services/database/migration_service_version_freeze_test.dart
   static const int databaseVersion = 1;
 
+  /// Explicit opt-in for the separate Windows test build.
+  ///
+  /// Build with:
+  ///   --dart-define=TWMT_ISOLATED_TEST_BUILD=true
+  ///
+  /// This is deliberately false for ordinary development and production
+  /// builds so existing installations keep their current data locations.
+  static const bool isIsolatedTestBuild = bool.fromEnvironment(
+    'TWMT_ISOLATED_TEST_BUILD',
+    defaultValue: false,
+  );
+
+  /// Dedicated root below %APPDATA% for the isolated test build.
+  static const String isolatedAppDirectoryName = 'TWMT_AI_Test';
+
+  /// Resolve the isolated data root without consulting path_provider.
+  /// Kept pure so its safety contract can be unit-tested on every platform.
+  @visibleForTesting
+  static String resolveIsolatedAppDataDirectory(String appDataDirectory) {
+    if (appDataDirectory.trim().isEmpty) {
+      throw ArgumentError.value(
+        appDataDirectory,
+        'appDataDirectory',
+        'APPDATA must not be empty for an isolated test build.',
+      );
+    }
+    return path.join(appDataDirectory, isolatedAppDirectoryName);
+  }
+
   /// Application directory name in AppData
   static const String appDirectoryName = 'com.github.slavyk82\\twmt';
 
@@ -54,6 +83,25 @@ class DatabaseConfig {
   /// `TestDatabase` (in-memory) or mock path_provider with a temp directory.
   static Future<String> _getAppDataDirectory() async {
     final underTest = Platform.environment['FLUTTER_TEST'] == 'true';
+
+    // The isolated build must never fall back to the original application's
+    // path_provider directory. Fail closed if its Windows environment is
+    // incomplete or the build flag is accidentally used on another platform.
+    if (isIsolatedTestBuild) {
+      if (!Platform.isWindows) {
+        throw UnsupportedError(
+          'TWMT isolated test builds are supported on Windows only.',
+        );
+      }
+      final appData = Platform.environment['APPDATA'];
+      if (appData == null || appData.trim().isEmpty) {
+        throw StateError(
+          'APPDATA is unavailable. Refusing to start the isolated test build '
+          'without a dedicated data directory.',
+        );
+      }
+      return resolveIsolatedAppDataDirectory(appData);
+    }
 
     if (kDebugMode && Platform.isWindows && !underTest) {
       // Real dev session on Windows: use the installed app's directory so the
@@ -130,9 +178,13 @@ class DatabaseConfig {
   /// which breaks when TMP/TEMP is redirected. This matches the logs path
   /// used by LoggingService and FileWatchService.
   static Future<String> getLogsDirectory() async {
-    final cacheBase = await getApplicationCacheDirectory();
+    // Keep every writable artifact of the isolated build under its dedicated
+    // APPDATA root. Ordinary builds retain the historical LocalAppData path.
+    final logsBase = isIsolatedTestBuild
+        ? Directory(await _getAppDataDirectory())
+        : await getApplicationCacheDirectory();
 
-    final logsDir = path.join(cacheBase.path, 'logs');
+    final logsDir = path.join(logsBase.path, 'logs');
     await Directory(logsDir).create(recursive: true);
     return logsDir;
   }
@@ -146,7 +198,9 @@ class DatabaseConfig {
   /// which breaks when TMP/TEMP is redirected. This matches the cache path
   /// used by FileWatchService.
   static Future<String> getCacheDirectory() async {
-    final cacheBase = await getApplicationCacheDirectory();
+    final cacheBase = isIsolatedTestBuild
+        ? Directory(await _getAppDataDirectory())
+        : await getApplicationCacheDirectory();
 
     final cacheDir = path.join(cacheBase.path, 'cache');
     await Directory(cacheDir).create(recursive: true);

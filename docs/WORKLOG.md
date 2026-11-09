@@ -138,3 +138,128 @@ Provider만 추가하면 실제 앱에서는 사용할 수 없다. 서비스 계
 ### 현재 다음 단계
 - 실제 앱에서 Ollama 서버 연결, 설치 모델 동기화, 모델 활성화, 짧은 번역을 순서대로 검증한다.
 - 사용자 지정 Base URL은 실제 사용 필요성이 확인되면 별도 작은 기능으로 진행한다.
+
+
+## 2026-11-09 — Windows 격리 테스트판 준비 (초기 조사 기록)
+
+> 이 항목은 초기 조사 시점의 상태 기록이다. 실제 구현 및 최신 진행 상황은 아래의 후속 항목을 기준으로 한다.
+
+### 수행
+- 최신 `main`의 Ollama 구현/문서 상태 확인. PR #1~#5는 모두 병합 완료로 개발 인덱스에 기록되어 있다.
+- `feature/windows-isolated-test-build` 브랜치를 `main`에서 생성.
+- `docs/WINDOWS_ISOLATED_TEST_BUILD.md` 작성.
+- Windows 플랫폼 폴더가 저장소에 없고, 현재 디버그 데이터 경로가 원본 설치판과 공유되며, Inno Setup ID가 원본 값과 같다는 위험을 확인했다.
+
+### 안전성 결정
+- 기존 설치판과 원본 사용자 데이터는 그대로 둔다.
+- 테스트판 전용 AppData 경로를 강제하고, DB/config/log/cache 및 secure storage를 분리한다.
+- 테스트판은 우선 별도 ZIP으로 배포한다. 원본과 동일한 설치 프로그램 ID를 재사용하지 않는다.
+- 격리 플래그가 없는 기존 빌드의 데이터 경로는 변경하지 않는다.
+
+### 아직 하지 않은 작업
+- Windows runner 생성 및 앱 식별자 분리
+- secure storage 네임스페이스 조사/분리
+- 데이터 경로 격리 코드와 테스트
+- 수동 Windows 빌드 workflow 및 ZIP artifact
+- 실제 Windows 실행/Ollama 번역 검증
+
+### 다음 순서
+1. secure storage 초기화 지점과 Windows credential key namespace 확인
+2. compile-time 격리 플래그 및 AppData 경로 구현/테스트
+3. Windows runner/제품 식별자 추가
+4. 수동 Windows 빌드 및 ZIP artifact workflow 구현
+5. 빌드 산출물 검사 후 PR 준비
+
+
+## 2026-11-09 — Windows 테스트판 데이터 경로 격리 1차 구현
+
+### 저장소 식별
+- 대상 저장소: `hjw831/Total-War-Mods-Translator-AI`
+- 작업 브랜치: `feature/windows-isolated-test-build`
+- 기준 브랜치: `main`
+- 이 작업은 TWMT 번역기 포크에만 해당하며 Total War 모드 프로젝트나 RunningShoeMileage와 혼합하지 않는다.
+
+### 조사
+- `DatabaseConfig`는 기존 Windows 디버그 실행에서 원본 설치판과 같은 `%APPDATA%\\com.github.slavyk82\\twmt` 경로를 사용할 수 있었다.
+- `LoggingService`는 `getApplicationCacheDirectory()`를 직접 조회해 중앙 경로 정책을 우회하고 있었다.
+- `LlmServiceLocator`는 `FlutterSecureStorage(WindowsOptions(useBackwardCompatibility: false))`를 사용한다.
+- 현재 lockfile의 `flutter_secure_storage_windows`는 3.1.2다. Windows 구현은 application support directory에 암호화된 파일을 저장하므로 DB 경로만 바꾸면 secure storage는 분리되지 않는다.
+- `shared_preferences`도 Windows runner의 앱 식별자/경로와 함께 검증해야 한다.
+- 구형 secure-storage 호환 경로 자동 이전은 `useBackwardCompatibility: false`로 비활성화된 상태이며, 이 정책을 유지한다.
+
+### 구현
+- `DatabaseConfig.isIsolatedTestBuild` compile-time define 추가: `TWMT_ISOLATED_TEST_BUILD`.
+- 격리 빌드는 Windows에서 `%APPDATA%\\TWMT_AI_Test`를 전용 루트로 사용.
+- APPDATA 누락 또는 비-Windows 환경에서는 원본 경로로 fallback하지 않고 오류 발생.
+- DB/config/log/cache 경로를 격리 루트 아래로 모음.
+- `LoggingService`가 `DatabaseConfig.getLogsDirectory()`를 사용하도록 변경.
+- `test/config/isolated_database_config_test.dart`에 경로 계산/빈 경로 거부 테스트 추가.
+- `.github/workflows/flutter-validation.yml`에 신규 테스트 실행 단계 추가.
+- 개발 인덱스와 격리 빌드 계획 문서 갱신.
+
+### 검증 상태
+- GitHub 파일 업데이트 성공 확인.
+- 아직 Flutter SDK에서 `flutter analyze` 또는 테스트를 실제 실행하지 않았다.
+- CI는 PR 생성 후 실행되도록 연결했으며 현재 통과 여부는 미확인.
+- Secure storage/shared_preferences는 W2에서 Windows runner의 CompanyName/ProductName을 원본과 분리한 뒤 실제 파일 경로를 확인해야 한다.
+- Windows runner가 저장소에 아직 없으므로 현재 Windows 실행 파일은 만들지 않았다.
+
+### 다음 업무
+1. Flutter Windows runner를 생성하고 원본과 다른 CompanyName/ProductName 및 실행 파일 식별자를 설정한다.
+2. Secure storage와 shared_preferences가 별도 application support 경로를 사용하는지 확인한다.
+3. 테스트판 전용 ZIP 산출 workflow를 추가한다.
+4. Windows 환경에서 테스트판/기존 앱을 함께 실행해 DB, 설정, API 키가 서로 보이지 않는지 확인한다.
+
+- 추가 조치: 격리 define이 켜진 실행 파일은 창 제목과 앱 제목을 `TWMT AI Test`로 표시한다.
+- 테스트 명령은 격리 define 없이 실행해야 한다. define은 Windows 테스트 앱 빌드에만 전달하며, 비-Windows 환경에서는 안전하게 거부한다.
+
+- W2 준비: Windows runner의 VERSIONINFO `CompanyName=TWMT_AI`, `ProductName=TWMT AI Test`, EXE `TWMT_AI_Test.exe`를 수동 빌드 workflow에서 설정한다.
+- 조사 결과 `path_provider_windows`는 VERSIONINFO의 `CompanyName\\ProductName`으로 Application Support 경로를 만들며, `flutter_secure_storage_windows`와 `shared_preferences_windows`는 이 경로를 사용한다. 따라서 이 runner 식별자 분리는 두 저장소 모두를 원본과 분리하는 데 필요하다.
+- `.github/workflows/windows-isolated-test-build.yml` 추가. `workflow_dispatch` 전용이며, CI 임시 공간에서 Windows runner를 생성하고 격리 식별자를 적용한 뒤 Release ZIP artifact를 만드는 구조다.
+- 이 workflow는 아직 실행하지 않았다. 빌드 산출물/경로/실행은 검증 전이다. 기존 Inno Setup 설정과 설치판은 변경하지 않는다.
+
+- 프로젝트 혼동 방지: `docs/DEVELOPMENT_INDEX.md`에 새 채팅 재개 체크리스트를 추가했다. 작업 전 저장소명/브랜치/업무일지를 확인하고, 다른 GPT 프로젝트의 코드나 업무기록을 섞지 않도록 명시했다.
+
+- 추가 전체 경로 점검에서 `FileWatchService`와 `FileService`도 `getApplicationCacheDirectory()`를 직접 조회해 로그/cache를 별도 경로로 만들고 있음을 발견했다.
+- 두 서비스의 로그/cache 경로 조회를 `DatabaseConfig.getLogsDirectory()` 및 `getCacheDirectory()`로 통일하고 불필요한 path_provider import를 제거했다. 일반 빌드에서는 기존 path_provider 기반 위치가 유지되고, 격리 빌드에서만 전용 루트로 이동한다.
+
+- PR 검증 run #22에서 `flutter analyze`가 실패했다. 로그에서 이번 변경의 오류는 `LoggingService`의 로그 파일명 조합에 필요한 `path` import 누락 1건이었고, 해당 import를 복구했다.
+- 같은 로그에서 저장소의 다른 파일에 기존 warning 20건이 함께 보고됐다. 이 작업과 무관한 기존 코드를 대량 수정하지 않도록 validation workflow 분석 대상을 PR에서 변경된 Dart 파일로 한정하고 checkout fetch-depth를 전체 이력으로 설정했다.
+- 이 변경 이후 새 CI run #35 및 추가 run의 최종 결과는 아직 확인되지 않았다. 통과로 기록하지 않는다.
+
+- 수동 Windows 빌드 workflow의 분석 단계도 전체 저장소가 아니라 격리 기능에서 수정한 Dart 파일 6개만 검사하도록 맞췄다. 저장소 전체의 기존 analyzer warning 때문에 포터블 테스트 빌드가 무관한 파일에서 막히는 일을 방지한다.
+- 현재 PR #6은 draft 상태로 유지한다. 첫 CI 시도에서 발견한 import 오류는 수정했으며, 후속 CI의 최종 통과 여부는 아직 확인되지 않았다. Windows ZIP workflow도 수동 실행 전이다.
+
+
+## 2026-11-09 — Windows 격리 테스트판 자동 검증 통과
+
+### 확인 대상
+- 저장소: `hjw831/Total-War-Mods-Translator-AI`
+- PR: #6 — `feature/windows-isolated-test-build` → `main`
+- 검증 커밋: `f98029659f6e3a5efd76249b231f9dc7e04ca474`
+- GitHub Actions: Flutter validation run #44 (run ID `42558750011`)
+
+### 결과
+- Workflow run: `completed / success`
+- Job `Analyze and test`: `completed / success`
+- Flutter 설치 및 의존성 설치: 통과
+- Slang / build_runner 코드 생성: 통과
+- PR 변경 Dart 파일 분석: 통과
+- Ollama Provider 테스트: 통과
+- Provider Factory 테스트: 통과
+- Ollama 모델 등록 테스트: 통과
+- 모델 Repository 검증 테스트: 통과
+- 격리 테스트 데이터 경로 정책 테스트: 통과
+
+### 판정 및 남은 위험
+- PR 코드의 Linux 기반 Flutter 정적 분석 및 지정 테스트는 통과했다.
+- 이것은 Windows Release 빌드나 Windows 런타임 경로 격리 검증을 의미하지 않는다.
+- Windows ZIP workflow는 아직 실행되지 않았고 artifact도 아직 없다.
+- 실제 Windows에서 원본 앱과 동시 실행, DB/config/log/cache, secure storage/shared_preferences, Ollama 연결 및 번역은 여전히 미검증이다.
+- PR #6은 draft로 유지하며 병합하지 않는다.
+
+### 다음 작업
+1. GitHub Actions에서 `Windows isolated test build` workflow를 `workflow_dispatch`로 수동 실행한다.
+2. ZIP artifact가 생성되면 파일 구성 및 테스트 README를 확인한다.
+3. 사용자 Windows에서 실행해 원본 앱과 데이터/자격 증명이 분리되는지 확인한다.
+4. Ollama 연결 및 짧은 번역까지 검증한 뒤 문서와 PR 상태를 갱신한다.

@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
+import '../../config/database_config.dart';
 import 'i_logging_service.dart';
 
 /// Logging service for TWMT application.
@@ -47,14 +47,11 @@ class LoggingService implements ILoggingService {
     if (_initialized) return;
 
     try {
-      // Get local application directory (AppData\Local\TWMT on Windows)
-      final directory = await getApplicationCacheDirectory();
-      final logsDir = Directory(path.join(directory.path, 'logs'));
-
-      // Create logs directory if it doesn't exist
-      if (!await logsDir.exists()) {
-        await logsDir.create(recursive: true);
-      }
+      // Resolve logs through the central path policy. In isolated test
+      // builds this remains under %APPDATA%\\TWMT_AI_Test; normal builds keep
+      // their existing app-specific cache location.
+      final logsPath = await DatabaseConfig.getLogsDirectory();
+      final logsDir = Directory(logsPath);
 
       // Create log file with date in filename
       final now = DateTime.now();
