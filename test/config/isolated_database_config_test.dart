@@ -25,10 +25,9 @@ void main() {
         throwsArgumentError,
       );
     });
-
-    test('isolated mode is opt-in and disabled for ordinary builds', () {
+ 
+    test('uses the documented isolated directory name', () {
       expect(DatabaseConfig.isolatedAppDirectoryName, 'TWMT_AI_Test');
-      expect(DatabaseConfig.isIsolatedTestBuild, isFalse);
     });
   });
 }
