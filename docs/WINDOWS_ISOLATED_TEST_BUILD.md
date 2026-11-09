@@ -32,7 +32,7 @@
 - 격리 플래그가 없는 기존 빌드의 데이터 경로는 변경하지 않는다.
 
 ### W2 — Windows 실행 프로젝트 및 식별자
-- Flutter Windows runner를 재현 가능한 방식으로 생성하고 저장소에 포함한다.
+- Flutter Windows runner를 수동 빌드 workflow의 임시 CI 작업공간에서 재현 가능하게 생성한다. runner 원본은 현재 저장소에 커밋하지 않는다.
 - 창 제목, 파일 제품 정보, 실행 파일 이름을 테스트판으로 구분한다.
 - 원본과 다른 설치 프로그램 ID를 사용한다. 테스트 단계에서는 원본 설치 프로그램을 실행하거나 갱신하지 않는다.
 
@@ -60,8 +60,8 @@
 ### Windows 앱 식별자 분리 설계 (W2)
 - Windows `path_provider`는 실행 파일 VERSIONINFO의 `CompanyName\\ProductName` 조합으로 앱별 Application Support 경로를 만든다.
 - 따라서 secure storage(현재 Windows 플러그인은 application support directory에 암호화 파일을 저장)와 shared_preferences는 runner VERSIONINFO를 원본과 다르게 설정해 분리한다.
-- 테스트판 runner 식별자 제안: `CompanyName=RAWITS`, `ProductName=TWMT AI Test`, 실행 파일 `TWMT_AI_Test.exe`.
-- 테스트판의 DB/config/log/cache 루트는 계속 명시적인 `%APPDATA%\\TWMT_AI_Test`를 사용한다. secure storage/shared_preferences는 runner identity 기반 경로 `%APPDATA%\\RAWITS\\TWMT AI Test`를 사용한다. 두 경로 모두 원본 `%APPDATA%\\com.github.slavyk82\\twmt`와 분리된다.
+- 테스트판 runner 식별자 제안: `CompanyName=TWMT_AI`, `ProductName=TWMT AI Test`, 실행 파일 `TWMT_AI_Test.exe`.
+- 테스트판의 DB/config/log/cache 루트는 계속 명시적인 `%APPDATA%\\TWMT_AI_Test`를 사용한다. secure storage/shared_preferences는 runner identity 기반 경로 `%APPDATA%\\TWMT_AI\\TWMT AI Test`를 사용한다. 두 경로 모두 원본 `%APPDATA%\\com.github.slavyk82\\twmt`와 분리된다.
 - Inno Setup 설정은 건드리지 않는다. 첫 테스트 배포는 설치 프로그램이 아닌 ZIP만 사용한다.
 
 ### 이번 커밋에서 구현한 범위
