@@ -138,3 +138,32 @@ Provider만 추가하면 실제 앱에서는 사용할 수 없다. 서비스 계
 ### 현재 다음 단계
 - 실제 앱에서 Ollama 서버 연결, 설치 모델 동기화, 모델 활성화, 짧은 번역을 순서대로 검증한다.
 - 사용자 지정 Base URL은 실제 사용 필요성이 확인되면 별도 작은 기능으로 진행한다.
+
+
+## 2026-11-09 — Windows 격리 테스트판 준비
+
+### 수행
+- 최신 `main`의 Ollama 구현/문서 상태 확인. PR #1~#5는 모두 병합 완료로 개발 인덱스에 기록되어 있다.
+- `feature/windows-isolated-test-build` 브랜치를 `main`에서 생성.
+- `docs/WINDOWS_ISOLATED_TEST_BUILD.md` 작성.
+- Windows 플랫폼 폴더가 저장소에 없고, 현재 디버그 데이터 경로가 원본 설치판과 공유되며, Inno Setup ID가 원본 값과 같다는 위험을 확인했다.
+
+### 안전성 결정
+- 기존 설치판과 원본 사용자 데이터는 그대로 둔다.
+- 테스트판 전용 AppData 경로를 강제하고, DB/config/log/cache 및 secure storage를 분리한다.
+- 테스트판은 우선 별도 ZIP으로 배포한다. 원본과 동일한 설치 프로그램 ID를 재사용하지 않는다.
+- 격리 플래그가 없는 기존 빌드의 데이터 경로는 변경하지 않는다.
+
+### 아직 하지 않은 작업
+- Windows runner 생성 및 앱 식별자 분리
+- secure storage 네임스페이스 조사/분리
+- 데이터 경로 격리 코드와 테스트
+- 수동 Windows 빌드 workflow 및 ZIP artifact
+- 실제 Windows 실행/Ollama 번역 검증
+
+### 다음 순서
+1. secure storage 초기화 지점과 Windows credential key namespace 확인
+2. compile-time 격리 플래그 및 AppData 경로 구현/테스트
+3. Windows runner/제품 식별자 추가
+4. 수동 Windows 빌드 및 ZIP artifact workflow 구현
+5. 빌드 산출물 검사 후 PR 준비
