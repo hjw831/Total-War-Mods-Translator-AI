@@ -50,10 +50,10 @@ jobs:
           $resourcePath = "windows/runner/Runner.rc"
           $resource = Get-Content $resourcePath -Raw
           $replacements = @{
-            'VALUE "CompanyName",\s*"[^"]*"' = 'VALUE "CompanyName", "RAWITS"'
+            'VALUE "CompanyName",\s*"[^"]*"' = 'VALUE "CompanyName", "TWMT_AI"'
             'VALUE "FileDescription",\s*"[^"]*"' = 'VALUE "FileDescription", "TWMT AI Test"'
             'VALUE "InternalName",\s*"[^"]*"' = 'VALUE "InternalName", "TWMT_AI_Test"'
-            'VALUE "LegalCopyright",\s*"[^"]*"' = 'VALUE "LegalCopyright", "Copyright (C) 2026 RAWITS. All rights reserved."'
+            'VALUE "LegalCopyright",\s*"[^"]*"' = 'VALUE "LegalCopyright", "Copyright (C) 2026 TWMT_AI. All rights reserved."'
             'VALUE "OriginalFilename",\s*"[^"]*"' = 'VALUE "OriginalFilename", "TWMT_AI_Test.exe"'
             'VALUE "ProductName",\s*"[^"]*"' = 'VALUE "ProductName", "TWMT AI Test"'
           }
@@ -61,7 +61,7 @@ jobs:
             $resource = [regex]::Replace($resource, $pattern, $replacements[$pattern])
           }
           foreach ($required in @(
-            'VALUE "CompanyName", "RAWITS"',
+            'VALUE "CompanyName", "TWMT_AI"',
             'VALUE "ProductName", "TWMT AI Test"',
             'VALUE "OriginalFilename", "TWMT_AI_Test.exe"'
           )) {
@@ -112,7 +112,7 @@ jobs:
 
           Data locations:
           - Database, configuration, logs and cache: %APPDATA%\TWMT_AI_Test
-          - Windows application-support data (including secure storage): %APPDATA%\RAWITS\TWMT AI Test
+          - Windows application-support data (including secure storage): %APPDATA%\TWMT_AI\TWMT AI Test
 
           The test build does not import the original app's database, settings or API keys.
           Ollama uses the local endpoint http://127.0.0.1:11434 when running.
