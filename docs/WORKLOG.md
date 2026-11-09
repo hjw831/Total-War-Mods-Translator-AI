@@ -167,3 +167,43 @@ Provider만 추가하면 실제 앱에서는 사용할 수 없다. 서비스 계
 3. Windows runner/제품 식별자 추가
 4. 수동 Windows 빌드 및 ZIP artifact workflow 구현
 5. 빌드 산출물 검사 후 PR 준비
+
+
+## 2026-11-09 — Windows 테스트판 데이터 경로 격리 1차 구현
+
+### 저장소 식별
+- 대상 저장소: `hjw831/Total-War-Mods-Translator-AI`
+- 작업 브랜치: `feature/windows-isolated-test-build`
+- 기준 브랜치: `main`
+- 이 작업은 TWMT 번역기 포크에만 해당하며 Total War 모드 프로젝트나 RunningShoeMileage와 혼합하지 않는다.
+
+### 조사
+- `DatabaseConfig`는 기존 Windows 디버그 실행에서 원본 설치판과 같은 `%APPDATA%\\com.github.slavyk82\\twmt` 경로를 사용할 수 있었다.
+- `LoggingService`는 `getApplicationCacheDirectory()`를 직접 조회해 중앙 경로 정책을 우회하고 있었다.
+- `LlmServiceLocator`는 `FlutterSecureStorage(WindowsOptions(useBackwardCompatibility: false))`를 사용한다.
+- 현재 lockfile의 `flutter_secure_storage_windows`는 3.1.2다. Windows 구현은 application support directory에 암호화된 파일을 저장하므로 DB 경로만 바꾸면 secure storage는 분리되지 않는다.
+- `shared_preferences`도 Windows runner의 앱 식별자/경로와 함께 검증해야 한다.
+- 구형 secure-storage 호환 경로 자동 이전은 `useBackwardCompatibility: false`로 비활성화된 상태이며, 이 정책을 유지한다.
+
+### 구현
+- `DatabaseConfig.isIsolatedTestBuild` compile-time define 추가: `TWMT_ISOLATED_TEST_BUILD`.
+- 격리 빌드는 Windows에서 `%APPDATA%\\TWMT_AI_Test`를 전용 루트로 사용.
+- APPDATA 누락 또는 비-Windows 환경에서는 원본 경로로 fallback하지 않고 오류 발생.
+- DB/config/log/cache 경로를 격리 루트 아래로 모음.
+- `LoggingService`가 `DatabaseConfig.getLogsDirectory()`를 사용하도록 변경.
+- `test/config/isolated_database_config_test.dart`에 경로 계산/빈 경로 거부 테스트 추가.
+- `.github/workflows/flutter-validation.yml`에 신규 테스트 실행 단계 추가.
+- 개발 인덱스와 격리 빌드 계획 문서 갱신.
+
+### 검증 상태
+- GitHub 파일 업데이트 성공 확인.
+- 아직 Flutter SDK에서 `flutter analyze` 또는 테스트를 실제 실행하지 않았다.
+- CI는 PR 생성 후 실행되도록 연결했으며 현재 통과 여부는 미확인.
+- Secure storage/shared_preferences는 W2에서 Windows runner의 CompanyName/ProductName을 원본과 분리한 뒤 실제 파일 경로를 확인해야 한다.
+- Windows runner가 저장소에 아직 없으므로 현재 Windows 실행 파일은 만들지 않았다.
+
+### 다음 업무
+1. Flutter Windows runner를 생성하고 원본과 다른 CompanyName/ProductName 및 실행 파일 식별자를 설정한다.
+2. Secure storage와 shared_preferences가 별도 application support 경로를 사용하는지 확인한다.
+3. 테스트판 전용 ZIP 산출 workflow를 추가한다.
+4. Windows 환경에서 테스트판/기존 앱을 함께 실행해 DB, 설정, API 키가 서로 보이지 않는지 확인한다.
