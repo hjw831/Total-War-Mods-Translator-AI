@@ -48,6 +48,38 @@
 - 기존 원본 TWMT와 테스트판을 번갈아 실행해 양쪽 DB/설정이 독립적인지 확인한다.
 - Ollama 연결 → 설치 모델 동기화 → 모델 활성화 → 짧은 번역 순서로 확인한다.
 
+## W1 조사 결과 및 구현 진행 상황 (2026-11-09)
+
+### 확인한 저장소/플러그인 구조
+- `flutter_secure_storage`는 `pubspec.yaml`에서 ^9.0.0을 사용하고, 현재 lockfile은 Windows 구현 `flutter_secure_storage_windows 3.1.2`를 고정한다.
+- 앱은 `lib/services/locators/llm_service_locator.dart`에서 `FlutterSecureStorage(WindowsOptions(useBackwardCompatibility: false))`를 생성한다.
+- Windows 플러그인의 현재 파일 저장 방식은 `path_provider.getApplicationSupportDirectory()` 기반이다. 따라서 이 저장소의 DB 경로만 바꿔서는 API 키 저장소가 격리되지 않는다. Windows runner의 CompanyName/ProductName 및 application support 경로가 원본 앱과 달라야 한다.
+- `shared_preferences`도 앱의 Windows 식별자/저장 경로에 의존하므로 W2에서 runner 식별자를 별도로 설정하고, W4에서 실제 파일 위치를 확인한다.
+- Windows secure storage의 구형 Credential Manager 호환 읽기/자동 이전은 `useBackwardCompatibility: false`로 이미 비활성화되어 있다. 이 설정을 true로 바꾸지 않는다.
+
+### 이번 커밋에서 구현한 범위
+- `TWMT_ISOLATED_TEST_BUILD=true` compile-time define 추가.
+- 격리 빌드는 Windows에서 `%APPDATA%\\TWMT_AI_Test`를 전용 데이터 루트로 사용한다.
+- 격리 빌드에서 APPDATA가 비어 있거나 Windows가 아니면 원본 경로로 fallback하지 않고 시작을 거부한다.
+- DB와 config는 전용 루트를 사용한다.
+- 로그와 cache도 전용 루트 아래로 이동한다.
+- `LoggingService`가 독립적으로 path_provider 경로를 계산하지 않고 `DatabaseConfig.getLogsDirectory()`를 사용하도록 중앙화했다.
+- 전용 경로 계산 및 빈 APPDATA 거부 단위 테스트를 추가했다.
+
+### 아직 격리 검증이 끝나지 않은 항목
+- Secure storage 및 shared_preferences 격리는 W2에서 Windows runner의 CompanyName/ProductName을 별도 식별자로 바꾼 후 검증한다.
+- Windows runner 디렉터리가 아직 없으므로 현재 브랜치만으로 Windows 앱을 빌드할 수 없다.
+- GitHub Actions 또는 로컬 Windows 환경에서 테스트를 아직 실행하지 않았다. 코드 변경은 구현 완료가 아니라 검증 대기 상태다.
+
+### W1 완료 기준
+- [x] DB/config 전용 루트
+- [x] 로그/cache 전용 루트
+- [x] 격리 플래그 없을 때 기존 경로 동작 보존
+- [x] APPDATA 누락 시 fail-closed
+- [x] 경로 정책 단위 테스트 추가
+- [ ] secure storage/shared_preferences 전용 경로 (W2 runner identity 필요)
+- [ ] Windows 환경 테스트 실행
+
 ## 완료 기준
 
 - 기존 설치판을 제거하거나 변경하지 않고 테스트판을 함께 실행할 수 있다.
