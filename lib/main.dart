@@ -57,7 +57,9 @@ void main() async {
         size: Size(1725, 975),
         minimumSize: Size(1725, 975),
         center: true,
-        title: 'TWMT - Total War Mods Translator',
+        title: DatabaseConfig.isIsolatedTestBuild
+            ? 'TWMT AI Test'
+            : 'TWMT - Total War Mods Translator',
         titleBarStyle: TitleBarStyle.normal,
       );
       await windowManager.waitUntilReadyToShow(windowOptions, () async {
@@ -168,7 +170,7 @@ class MyApp extends ConsumerWidget {
     };
 
     return MaterialApp.router(
-      title: 'TWMT',
+      title: DatabaseConfig.isIsolatedTestBuild ? 'TWMT AI Test' : 'TWMT',
       debugShowCheckedModeBanner: false,
       theme: theme,
       routerConfig: router,
