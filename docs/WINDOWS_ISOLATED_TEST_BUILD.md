@@ -75,9 +75,9 @@
 - 전용 경로 계산 및 빈 APPDATA 거부 단위 테스트를 추가했다.
 
 ### 아직 격리 검증이 끝나지 않은 항목
-- Secure storage 및 shared_preferences 격리는 W2에서 Windows runner의 CompanyName/ProductName을 별도 식별자로 바꾼 후 검증한다.
-- Windows runner 디렉터리가 아직 없으므로 현재 브랜치만으로 Windows 앱을 빌드할 수 없다.
-- GitHub Actions 또는 로컬 Windows 환경에서 테스트를 아직 실행하지 않았다. 코드 변경은 구현 완료가 아니라 검증 대기 상태다.
+- Secure storage와 shared_preferences는 Windows `path_provider`의 Application Support 경로를 사용한다. 수동 빌드 workflow가 runner VERSIONINFO의 CompanyName/ProductName을 분리해 이 저장소 경로를 원본과 다르게 설정한다.
+- Windows runner 소스는 저장소에 직접 추가하지 않고 수동 빌드 workflow가 임시 CI 작업공간에서 생성한다. 따라서 로컬 Windows 실행은 아직 불가능하지만, workflow를 통한 ZIP 산출 경로는 준비됐다.
+- GitHub Actions 또는 로컬 Windows 환경에서 테스트/빌드를 아직 실행하지 않았다. workflow 구성은 완료했지만 실제 산출물과 경로는 검증 대기 상태다.
 
 ### W1 완료 기준
 - [x] DB/config 전용 루트
@@ -85,7 +85,8 @@
 - [x] 격리 플래그 없을 때 기존 경로 동작 보존
 - [x] APPDATA 누락 시 fail-closed
 - [x] 경로 정책 단위 테스트 추가
-- [ ] secure storage/shared_preferences 전용 경로 (W2 runner identity 필요)
+- [x] secure storage/shared_preferences용 별도 runner identity 빌드 설정 추가
+- [ ] 실제 Windows에서 secure storage/shared_preferences 경로 확인
 - [ ] Windows 환경 테스트 실행
 
 ## 완료 기준
@@ -100,4 +101,5 @@
 
 - 전용 브랜치 `feature/windows-isolated-test-build` 생성 완료.
 - 위 위험 요소는 GitHub `main`의 `database_config.dart`, `pubspec.yaml`, `lib/main.dart`, workflow 파일을 확인해 기록했다.
-- 아직 Windows runner 생성, 코드 변경, 빌드, 실제 실행은 하지 않았다.
+- Windows runner는 수동 빌드 workflow가 CI 작업공간에서 생성하도록 구성했다. 저장소에 runner 원본을 커밋하지 않았다.
+- 수동 Windows ZIP 빌드 workflow는 추가했지만 아직 실행하지 않았다.
