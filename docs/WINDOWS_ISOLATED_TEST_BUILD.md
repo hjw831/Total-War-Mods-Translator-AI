@@ -71,6 +71,7 @@
 - DB와 config는 전용 루트를 사용한다.
 - 로그와 cache도 전용 루트 아래로 이동한다.
 - `LoggingService`가 독립적으로 path_provider 경로를 계산하지 않고 `DatabaseConfig.getLogsDirectory()`를 사용하도록 중앙화했다.
+- 격리 빌드에서는 Windows 창 제목과 Flutter 앱 제목을 `TWMT AI Test`로 표시한다.
 - 전용 경로 계산 및 빈 APPDATA 거부 단위 테스트를 추가했다.
 
 ### 아직 격리 검증이 끝나지 않은 항목
