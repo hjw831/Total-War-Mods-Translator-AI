@@ -222,3 +222,7 @@ Provider만 추가하면 실제 앱에서는 사용할 수 없다. 서비스 계
 
 - 추가 전체 경로 점검에서 `FileWatchService`와 `FileService`도 `getApplicationCacheDirectory()`를 직접 조회해 로그/cache를 별도 경로로 만들고 있음을 발견했다.
 - 두 서비스의 로그/cache 경로 조회를 `DatabaseConfig.getLogsDirectory()` 및 `getCacheDirectory()`로 통일하고 불필요한 path_provider import를 제거했다. 일반 빌드에서는 기존 path_provider 기반 위치가 유지되고, 격리 빌드에서만 전용 루트로 이동한다.
+
+- PR 검증 run #22에서 `flutter analyze`가 실패했다. 로그에서 이번 변경의 오류는 `LoggingService`의 로그 파일명 조합에 필요한 `path` import 누락 1건이었고, 해당 import를 복구했다.
+- 같은 로그에서 저장소의 다른 파일에 기존 warning 20건이 함께 보고됐다. 이 작업과 무관한 기존 코드를 대량 수정하지 않도록 validation workflow 분석 대상을 PR에서 변경된 Dart 파일로 한정하고 checkout fetch-depth를 전체 이력으로 설정했다.
+- 이 변경 이후 새 CI run #35 및 추가 run의 최종 결과는 아직 확인되지 않았다. 통과로 기록하지 않는다.
