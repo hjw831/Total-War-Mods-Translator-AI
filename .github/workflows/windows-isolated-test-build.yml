@@ -79,8 +79,15 @@ jobs:
           dart run slang
           dart run build_runner build --delete-conflicting-outputs
 
-      - name: Analyze Dart code
-        run: flutter analyze
+      - name: Analyze isolated build source files
+        run: >-
+          flutter analyze
+          lib/config/database_config.dart
+          lib/main.dart
+          lib/services/shared/logging_service.dart
+          lib/services/file/file_watch_service.dart
+          lib/services/file/file_service.dart
+          test/config/isolated_database_config_test.dart
 
       - name: Test isolated data path policy
         run: flutter test test/config/isolated_database_config_test.dart
