@@ -60,3 +60,6 @@ jobs:
 
       - name: Test model repository validation
         run: flutter test test/unit/repositories/llm_provider_model_repository_test.dart
+
+      - name: Test isolated test data path policy
+        run: flutter test test/config/isolated_database_config_test.dart
