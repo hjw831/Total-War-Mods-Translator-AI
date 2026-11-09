@@ -50,7 +50,7 @@ Ollama `/api/tags` 설치 모델 동기화까지 병합했다. 신규 모델만 
 - 전용 브랜치 `feature/windows-isolated-test-build`에서 작업한다. 다른 GPT 프로젝트/저장소와 혼합하지 않는다.
 - 1차 구현: `TWMT_ISOLATED_TEST_BUILD=true`일 때 DB/config/log/cache를 `%APPDATA%\\TWMT_AI_Test` 아래에 저장한다.
 - APPDATA가 없거나 Windows가 아니면 원본 경로로 fallback하지 않고 fail-closed 한다.
-- 로그 경로를 `DatabaseConfig`로 중앙화하고 경로 단위 테스트를 추가했으며 Flutter validation workflow에 해당 테스트를 연결했다.
+- `LoggingService`, `FileWatchService`, `FileService`의 로그/cache 경로를 `DatabaseConfig`로 중앙화하고 경로 단위 테스트를 Flutter validation workflow에 연결했다.
 - 격리 빌드 창 제목을 `TWMT AI Test`로 구분한다.
 - Secure storage와 shared_preferences도 VERSIONINFO의 `CompanyName=TWMT_AI`, `ProductName=TWMT AI Test`를 사용하도록 수동 빌드 workflow에서 분리한다.
 - `.github/workflows/windows-isolated-test-build.yml` 추가: workflow_dispatch 전용, 임시 CI runner 생성, portable ZIP artifact.
