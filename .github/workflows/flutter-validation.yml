@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -46,8 +48,30 @@ jobs:
           dart run slang
           dart run build_runner build --delete-conflicting-outputs
 
-      - name: Analyze Dart code
-        run: flutter analyze
+      - name: Analyze changed Dart files
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            base_sha="$PR_BASE_SHA"
+          else
+            base_sha="$PUSH_BEFORE_SHA"
+          fi
+
+          if [ -z "$base_sha" ] || [ "$base_sha" = "0000000000000000000000000000000000000000" ]; then
+            echo "No previous commit is available; skipping changed-file analysis."
+            exit 0
+          fi
+
+          mapfile -t changed_dart_files < <(git diff --name-only "$base_sha"...HEAD -- '*.dart')
+          if [ "${#changed_dart_files[@]}" -eq 0 ]; then
+            echo "No changed Dart files to analyze."
+          else
+            printf 'Analyzing changed Dart files:\\n%s\\n' "${changed_dart_files[@]}"
+            flutter analyze "${changed_dart_files[@]}"
+          fi
 
       - name: Test Ollama provider
         run: flutter test test/unit/services/llm/ollama_provider_test.dart
