@@ -4,7 +4,7 @@
 원본 Total War Mods Translator(TWMT)를 기반으로, 기존 번역·팩 내보내기 기능을 보존하면서 로컬 LLM과 추가 AI 번역 공급자를 선택적으로 확장한다.
 
 ## 현재 단계
-**Ollama Provider 병합 완료. Windows 격리 테스트판의 데이터 경로 격리 1차 구현 진행 중.** 실제 Windows 빌드와 Ollama 실행 검증은 아직 남아 있다.
+**Ollama Provider 병합 완료. Windows 격리 테스트판 1차 구현 및 GitHub 자동 검증 통과.** 실제 Windows ZIP 빌드와 실행/Ollama 검증은 아직 남아 있다.
 
 - PR #1: 개발 기반 문서 병합 완료
 - PR #3: Flutter 자동 검증 workflow 병합 완료
@@ -51,9 +51,9 @@ Ollama `/api/tags` 설치 모델 동기화까지 병합했다. 신규 모델만 
 - 1차 구현: `TWMT_ISOLATED_TEST_BUILD=true`일 때 DB/config/log/cache를 `%APPDATA%\\TWMT_AI_Test` 아래에 저장한다.
 - APPDATA가 없거나 Windows가 아니면 원본 경로로 fallback하지 않고 fail-closed 한다.
 - `LoggingService`, `FileWatchService`, `FileService`의 로그/cache 경로를 `DatabaseConfig`로 중앙화하고 경로 단위 테스트를 Flutter validation workflow에 연결했다.
-- 저장소 전체의 기존 analyzer warning과 변경 오류를 구분하도록 CI가 PR 변경 Dart 파일만 분석하게 조정했다. 최신 CI 결과는 대기 중.
+- 저장소 전체의 기존 analyzer warning과 변경 오류를 구분하도록 CI가 PR 변경 Dart 파일만 분석하게 조정했다. PR #6 최신 커밋 `f980296`의 GitHub Actions run #44에서 변경 파일 분석, 코드 생성, Ollama 관련 테스트 및 격리 경로 테스트가 모두 통과했다.
 - 격리 빌드 창 제목을 `TWMT AI Test`로 구분한다.
 - Secure storage와 shared_preferences도 VERSIONINFO의 `CompanyName=TWMT_AI`, `ProductName=TWMT AI Test`를 사용하도록 수동 빌드 workflow에서 분리한다.
 - `.github/workflows/windows-isolated-test-build.yml` 추가: workflow_dispatch 전용, 임시 CI runner 생성, portable ZIP artifact.
-- 다음: workflow 수동 실행 승인/빌드 → 실제 Windows 실행 → 기존 앱과 DB·설정·API 키 격리 확인.
+- 다음: 수동 Windows ZIP workflow 실행 → artifact 검사 → 실제 Windows 실행 → 기존 앱과 DB·설정·API 키 격리 확인. GitHub 연결 도구에서는 workflow_dispatch 실행 기능을 사용할 수 없어 Actions 페이지에서 수동 실행이 필요하다.
 - 기존 설치판과 원본 데이터는 수정하지 않는다.
