@@ -226,3 +226,6 @@ Provider만 추가하면 실제 앱에서는 사용할 수 없다. 서비스 계
 - PR 검증 run #22에서 `flutter analyze`가 실패했다. 로그에서 이번 변경의 오류는 `LoggingService`의 로그 파일명 조합에 필요한 `path` import 누락 1건이었고, 해당 import를 복구했다.
 - 같은 로그에서 저장소의 다른 파일에 기존 warning 20건이 함께 보고됐다. 이 작업과 무관한 기존 코드를 대량 수정하지 않도록 validation workflow 분석 대상을 PR에서 변경된 Dart 파일로 한정하고 checkout fetch-depth를 전체 이력으로 설정했다.
 - 이 변경 이후 새 CI run #35 및 추가 run의 최종 결과는 아직 확인되지 않았다. 통과로 기록하지 않는다.
+
+- 수동 Windows 빌드 workflow의 분석 단계도 전체 저장소가 아니라 격리 기능에서 수정한 Dart 파일 6개만 검사하도록 맞췄다. 저장소 전체의 기존 analyzer warning 때문에 포터블 테스트 빌드가 무관한 파일에서 막히는 일을 방지한다.
+- 현재 PR #6은 draft 상태로 유지한다. 첫 CI 시도에서 발견한 import 오류는 수정했으며, 후속 CI의 최종 통과 여부는 아직 확인되지 않았다. Windows ZIP workflow도 수동 실행 전이다.
