@@ -6,8 +6,8 @@ on:
       build_number:
         description: "Windows test build number"
         required: true
-        default: "2"
-        type: string
+        default: 2
+        type: number
 
 permissions:
   contents: read
