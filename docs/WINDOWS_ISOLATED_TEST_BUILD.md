@@ -70,13 +70,14 @@
 - 격리 빌드에서 APPDATA가 비어 있거나 Windows가 아니면 원본 경로로 fallback하지 않고 시작을 거부한다.
 - DB와 config는 전용 루트를 사용한다.
 - 로그와 cache도 전용 루트 아래로 이동한다.
-- `LoggingService`가 독립적으로 path_provider 경로를 계산하지 않고 `DatabaseConfig.getLogsDirectory()`를 사용하도록 중앙화했다.
+- `LoggingService`, `FileWatchService`, `FileService`가 각자 path_provider에서 로그/cache 경로를 다시 계산하던 우회 경로를 제거하고 `DatabaseConfig.getLogsDirectory()` / `getCacheDirectory()`로 통일했다.
 - 격리 빌드에서는 Windows 창 제목과 Flutter 앱 제목을 `TWMT AI Test`로 표시한다.
 - 전용 경로 계산 및 빈 APPDATA 거부 단위 테스트를 추가했다.
 
 ### 아직 격리 검증이 끝나지 않은 항목
 - Secure storage와 shared_preferences는 Windows `path_provider`의 Application Support 경로를 사용한다. 수동 빌드 workflow가 runner VERSIONINFO의 CompanyName/ProductName을 분리해 이 저장소 경로를 원본과 다르게 설정한다.
 - Windows runner 소스는 저장소에 직접 추가하지 않고 수동 빌드 workflow가 임시 CI 작업공간에서 생성한다. 따라서 로컬 Windows 실행은 아직 불가능하지만, workflow를 통한 ZIP 산출 경로는 준비됐다.
+- 코드 전체 경로 재검토에서 `FileWatchService`와 `FileService`의 직접 path_provider 조회를 추가 발견해 중앙 정책으로 수정했다.
 - GitHub Actions 또는 로컬 Windows 환경에서 테스트/빌드를 아직 실행하지 않았다. workflow 구성은 완료했지만 실제 산출물과 경로는 검증 대기 상태다.
 
 ### W1 완료 기준
