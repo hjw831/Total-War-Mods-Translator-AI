@@ -1,0 +1,133 @@
+name: Windows isolated test build
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: "Windows test build number"
+        required: true
+        default: "2"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    name: Build isolated TWMT AI Test ZIP
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # The upstream fork currently has no checked-in Windows runner.
+      # Generate the standard runner in the ephemeral CI workspace only.
+      - name: Generate Windows runner
+        run: flutter create --platforms=windows --project-name twmt --org com.rawits .
+
+      - name: Apply isolated Windows product identity
+        shell: pwsh
+        run: |
+          $cmakePath = "windows/CMakeLists.txt"
+          $cmake = Get-Content $cmakePath -Raw
+          $cmake = [regex]::Replace(
+            $cmake,
+            'set\(BINARY_NAME\s+"[^"]+"\)',
+            'set(BINARY_NAME "TWMT_AI_Test")'
+          )
+          if ($cmake -notmatch 'set\(BINARY_NAME\s+"TWMT_AI_Test"\)') {
+            throw "Could not set the isolated Windows executable name."
+          }
+          Set-Content -Path $cmakePath -Value $cmake -Encoding utf8
+
+          $resourcePath = "windows/runner/Runner.rc"
+          $resource = Get-Content $resourcePath -Raw
+          $replacements = @{
+            'VALUE "CompanyName",\s*"[^"]*"' = 'VALUE "CompanyName", "RAWITS"'
+            'VALUE "FileDescription",\s*"[^"]*"' = 'VALUE "FileDescription", "TWMT AI Test"'
+            'VALUE "InternalName",\s*"[^"]*"' = 'VALUE "InternalName", "TWMT_AI_Test"'
+            'VALUE "LegalCopyright",\s*"[^"]*"' = 'VALUE "LegalCopyright", "Copyright (C) 2026 RAWITS. All rights reserved."'
+            'VALUE "OriginalFilename",\s*"[^"]*"' = 'VALUE "OriginalFilename", "TWMT_AI_Test.exe"'
+            'VALUE "ProductName",\s*"[^"]*"' = 'VALUE "ProductName", "TWMT AI Test"'
+          }
+          foreach ($pattern in $replacements.Keys) {
+            $resource = [regex]::Replace($resource, $pattern, $replacements[$pattern])
+          }
+          foreach ($required in @(
+            'VALUE "CompanyName", "RAWITS"',
+            'VALUE "ProductName", "TWMT AI Test"',
+            'VALUE "OriginalFilename", "TWMT_AI_Test.exe"'
+          )) {
+            if (-not $resource.Contains($required)) {
+              throw "Windows runner identity patch failed: $required"
+            }
+          }
+          Set-Content -Path $resourcePath -Value $resource -Encoding utf8
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate localization and provider code
+        run: |
+          dart run slang
+          dart run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze Dart code
+        run: flutter analyze
+
+      - name: Test isolated data path policy
+        run: flutter test test/config/isolated_database_config_test.dart
+
+      - name: Build isolated Windows release
+        run: >-
+          flutter build windows --release
+          --dart-define=TWMT_ISOLATED_TEST_BUILD=true
+          --build-name=2.0.7
+          --build-number=${{ inputs.build_number }}
+
+      - name: Package portable ZIP
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path "build/windows" -Filter "TWMT_AI_Test.exe" -Recurse |
+            Select-Object -First 1
+          if ($null -eq $exe) {
+            throw "TWMT_AI_Test.exe was not found in the Windows build output."
+          }
+
+          $packageDir = Join-Path $env:RUNNER_TEMP "TWMT_AI_Test"
+          New-Item -ItemType Directory -Force -Path $packageDir | Out-Null
+          Copy-Item -Path (Join-Path $exe.Directory.FullName "*") -Destination $packageDir -Recurse -Force
+
+          @'
+          TWMT AI Test — Portable Windows Build
+
+          This is a separate test application. It does not install over or update the original TWMT.
+
+          Data locations:
+          - Database, configuration, logs and cache: %APPDATA%\TWMT_AI_Test
+          - Windows application-support data (including secure storage): %APPDATA%\RAWITS\TWMT AI Test
+
+          The test build does not import the original app's database, settings or API keys.
+          Ollama uses the local endpoint http://127.0.0.1:11434 when running.
+
+          Extract this ZIP to its own folder and run TWMT_AI_Test.exe.
+          No installer is included.
+          '@ | Set-Content -Path (Join-Path $packageDir "TEST_BUILD_README.txt") -Encoding utf8
+
+          $zip = Join-Path $env:GITHUB_WORKSPACE "TWMT-AI-Test-Windows-x64.zip"
+          Compress-Archive -Path (Join-Path $packageDir "*") -DestinationPath $zip -Force
+
+      - name: Upload portable ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: TWMT-AI-Test-Windows-x64
+          path: TWMT-AI-Test-Windows-x64.zip
+          if-no-files-found: error
+          retention-days: 14
