@@ -32,7 +32,7 @@
 2. `main`과 현재 작업 브랜치를 구분한다. 현재 Windows 격리 작업은 `feature/windows-isolated-test-build`에서만 진행한다.
 3. 이 인덱스와 `docs/WORKLOG.md`, 진행 중인 기능 문서 `docs/WINDOWS_ISOLATED_TEST_BUILD.md`를 먼저 읽는다.
 4. 다른 GPT 프로젝트(예: Total War 게임패드 모드, RunningShoeMileage)의 코드/브랜치/업무일지를 이 저장소 작업에 가져오거나 수정하지 않는다.
-5. PR #6은 Windows 격리 테스트판 WIP이며, 실제 Windows 빌드와 실행 검증 전에는 병합하지 않는다.
+5. [PR #6 — Windows 격리 테스트판 WIP](https://github.com/hjw831/Total-War-Mods-Translator-AI/pull/6)는 실제 Windows 빌드와 실행 검증 전에는 병합하지 않는다.
 6. 사용자 데이터, 원본 앱 설치, 원본 저장소는 변경하지 않는다.
 
 ## 범위 통제 원칙
