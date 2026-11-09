@@ -43,6 +43,7 @@ Ollama `/api/tags` 설치 모델 동기화까지 병합했다. 신규 모델만 
 - 1차 구현: `TWMT_ISOLATED_TEST_BUILD=true`일 때 DB/config/log/cache를 `%APPDATA%\\TWMT_AI_Test` 아래에 저장한다.
 - APPDATA가 없거나 Windows가 아니면 원본 경로로 fallback하지 않고 fail-closed 한다.
 - 로그 경로를 `DatabaseConfig`로 중앙화하고 경로 단위 테스트를 추가했으며 Flutter validation workflow에 해당 테스트를 연결했다.
+- 격리 빌드 창 제목을 `TWMT AI Test`로 구분한다.
 - Secure storage와 shared_preferences는 Windows runner의 CompanyName/ProductName이 원본과 달라야 완전 격리되므로 W2에서 검증한다.
-- 다음: Windows runner 생성 및 식별자 분리 → 수동 Windows ZIP 빌드 → 실제 실행/데이터 격리 확인.
+- 다음: Windows runner 생성 및 VERSIONINFO 식별자(`CompanyName=RAWITS`, `ProductName=TWMT AI Test`) 분리 → 수동 Windows ZIP 빌드 → 실제 실행/데이터 격리 확인.
 - 기존 설치판과 원본 데이터는 수정하지 않는다.
