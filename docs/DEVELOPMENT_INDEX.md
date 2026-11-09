@@ -52,7 +52,7 @@ Ollama `/api/tags` 설치 모델 동기화까지 병합했다. 신규 모델만 
 - APPDATA가 없거나 Windows가 아니면 원본 경로로 fallback하지 않고 fail-closed 한다.
 - 로그 경로를 `DatabaseConfig`로 중앙화하고 경로 단위 테스트를 추가했으며 Flutter validation workflow에 해당 테스트를 연결했다.
 - 격리 빌드 창 제목을 `TWMT AI Test`로 구분한다.
-- Secure storage와 shared_preferences도 VERSIONINFO의 `CompanyName=RAWITS`, `ProductName=TWMT AI Test`를 사용하도록 수동 빌드 workflow에서 분리한다.
+- Secure storage와 shared_preferences도 VERSIONINFO의 `CompanyName=TWMT_AI`, `ProductName=TWMT AI Test`를 사용하도록 수동 빌드 workflow에서 분리한다.
 - `.github/workflows/windows-isolated-test-build.yml` 추가: workflow_dispatch 전용, 임시 CI runner 생성, portable ZIP artifact.
 - 다음: workflow 수동 실행 승인/빌드 → 실제 Windows 실행 → 기존 앱과 DB·설정·API 키 격리 확인.
 - 기존 설치판과 원본 데이터는 수정하지 않는다.
