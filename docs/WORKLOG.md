@@ -210,3 +210,8 @@ Provider만 추가하면 실제 앱에서는 사용할 수 없다. 서비스 계
 
 - 추가 조치: 격리 define이 켜진 실행 파일은 창 제목과 앱 제목을 `TWMT AI Test`로 표시한다.
 - 테스트 명령은 격리 define 없이 실행해야 한다. define은 Windows 테스트 앱 빌드에만 전달하며, 비-Windows 환경에서는 안전하게 거부한다.
+
+- W2 준비: Windows runner의 VERSIONINFO `CompanyName=RAWITS`, `ProductName=TWMT AI Test`, EXE `TWMT_AI_Test.exe`를 수동 빌드 workflow에서 설정한다.
+- 조사 결과 `path_provider_windows`는 VERSIONINFO의 `CompanyName\\ProductName`으로 Application Support 경로를 만들며, `flutter_secure_storage_windows`와 `shared_preferences_windows`는 이 경로를 사용한다. 따라서 이 runner 식별자 분리는 두 저장소 모두를 원본과 분리하는 데 필요하다.
+- `.github/workflows/windows-isolated-test-build.yml` 추가. `workflow_dispatch` 전용이며, CI 임시 공간에서 Windows runner를 생성하고 격리 식별자를 적용한 뒤 Release ZIP artifact를 만드는 구조다.
+- 이 workflow는 아직 실행하지 않았다. 빌드 산출물/경로/실행은 검증 전이다. 기존 Inno Setup 설정과 설치판은 변경하지 않는다.
