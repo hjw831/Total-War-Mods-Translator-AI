@@ -217,3 +217,6 @@ Provider만 추가하면 실제 앱에서는 사용할 수 없다. 서비스 계
 - 이 workflow는 아직 실행하지 않았다. 빌드 산출물/경로/실행은 검증 전이다. 기존 Inno Setup 설정과 설치판은 변경하지 않는다.
 
 - 프로젝트 혼동 방지: `docs/DEVELOPMENT_INDEX.md`에 새 채팅 재개 체크리스트를 추가했다. 작업 전 저장소명/브랜치/업무일지를 확인하고, 다른 GPT 프로젝트의 코드나 업무기록을 섞지 않도록 명시했다.
+
+- 추가 전체 경로 점검에서 `FileWatchService`와 `FileService`도 `getApplicationCacheDirectory()`를 직접 조회해 로그/cache를 별도 경로로 만들고 있음을 발견했다.
+- 두 서비스의 로그/cache 경로 조회를 `DatabaseConfig.getLogsDirectory()` 및 `getCacheDirectory()`로 통일하고 불필요한 path_provider import를 제거했다. 일반 빌드에서는 기존 path_provider 기반 위치가 유지되고, 격리 빌드에서만 전용 루트로 이동한다.
