@@ -38,7 +38,7 @@
 
 ### W3 — 수동 Windows 빌드
 - GitHub Actions에 `workflow_dispatch` 전용 Windows 빌드 작업을 추가한다.
-- Flutter stable 설치, 의존성/코드 생성, `flutter analyze`, 관련 테스트, 격리 define을 적용한 Windows Release 빌드를 수행한다.
+- Flutter stable 설치, 의존성/코드 생성, 변경된 Dart 파일 분석, 관련 테스트, 격리 define을 적용한 Windows Release 빌드를 수행한다.
 - 산출물에는 테스트판 실행 파일과 필요한 런타임 파일만 포함하고, 별도 ZIP artifact로 제공한다.
 - 빌드 성공과 실제 Windows 실행 검증을 구분해 기록한다.
 
@@ -78,7 +78,9 @@
 - Secure storage와 shared_preferences는 Windows `path_provider`의 Application Support 경로를 사용한다. 수동 빌드 workflow가 runner VERSIONINFO의 CompanyName/ProductName을 분리해 이 저장소 경로를 원본과 다르게 설정한다.
 - Windows runner 소스는 저장소에 직접 추가하지 않고 수동 빌드 workflow가 임시 CI 작업공간에서 생성한다. 따라서 로컬 Windows 실행은 아직 불가능하지만, workflow를 통한 ZIP 산출 경로는 준비됐다.
 - 코드 전체 경로 재검토에서 `FileWatchService`와 `FileService`의 직접 path_provider 조회를 추가 발견해 중앙 정책으로 수정했다.
-- GitHub Actions 또는 로컬 Windows 환경에서 테스트/빌드를 아직 실행하지 않았다. workflow 구성은 완료했지만 실제 산출물과 경로는 검증 대기 상태다.
+- 첫 PR 검증에서 `LoggingService`의 로그 파일명에 쓰는 `path.join` import 누락을 발견해 복구했다.
+- 전체 저장소 분석은 변경 파일과 무관한 기존 warning 20건도 실패 처리하므로, validation workflow의 분석 대상을 PR에서 변경된 Dart 파일로 한정했다. 이 변경의 새 CI 결과는 아직 대기 중이다.
+- GitHub Actions 또는 로컬 Windows 환경에서 테스트/빌드를 아직 실행하지 않았다. 실제 산출물과 경로는 검증 대기 상태다.
 
 ### W1 완료 기준
 - [x] DB/config 전용 루트
