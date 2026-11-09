@@ -229,3 +229,37 @@ Provider만 추가하면 실제 앱에서는 사용할 수 없다. 서비스 계
 
 - 수동 Windows 빌드 workflow의 분석 단계도 전체 저장소가 아니라 격리 기능에서 수정한 Dart 파일 6개만 검사하도록 맞췄다. 저장소 전체의 기존 analyzer warning 때문에 포터블 테스트 빌드가 무관한 파일에서 막히는 일을 방지한다.
 - 현재 PR #6은 draft 상태로 유지한다. 첫 CI 시도에서 발견한 import 오류는 수정했으며, 후속 CI의 최종 통과 여부는 아직 확인되지 않았다. Windows ZIP workflow도 수동 실행 전이다.
+
+
+## 2026-11-09 — Windows 격리 테스트판 자동 검증 통과
+
+### 확인 대상
+- 저장소: `hjw831/Total-War-Mods-Translator-AI`
+- PR: #6 — `feature/windows-isolated-test-build` → `main`
+- 검증 커밋: `f98029659f6e3a5efd76249b231f9dc7e04ca474`
+- GitHub Actions: Flutter validation run #44 (run ID `42558750011`)
+
+### 결과
+- Workflow run: `completed / success`
+- Job `Analyze and test`: `completed / success`
+- Flutter 설치 및 의존성 설치: 통과
+- Slang / build_runner 코드 생성: 통과
+- PR 변경 Dart 파일 분석: 통과
+- Ollama Provider 테스트: 통과
+- Provider Factory 테스트: 통과
+- Ollama 모델 등록 테스트: 통과
+- 모델 Repository 검증 테스트: 통과
+- 격리 테스트 데이터 경로 정책 테스트: 통과
+
+### 판정 및 남은 위험
+- PR 코드의 Linux 기반 Flutter 정적 분석 및 지정 테스트는 통과했다.
+- 이것은 Windows Release 빌드나 Windows 런타임 경로 격리 검증을 의미하지 않는다.
+- Windows ZIP workflow는 아직 실행되지 않았고 artifact도 아직 없다.
+- 실제 Windows에서 원본 앱과 동시 실행, DB/config/log/cache, secure storage/shared_preferences, Ollama 연결 및 번역은 여전히 미검증이다.
+- PR #6은 draft로 유지하며 병합하지 않는다.
+
+### 다음 작업
+1. GitHub Actions에서 `Windows isolated test build` workflow를 `workflow_dispatch`로 수동 실행한다.
+2. ZIP artifact가 생성되면 파일 구성 및 테스트 README를 확인한다.
+3. 사용자 Windows에서 실행해 원본 앱과 데이터/자격 증명이 분리되는지 확인한다.
+4. Ollama 연결 및 짧은 번역까지 검증한 뒤 문서와 PR 상태를 갱신한다.
