@@ -57,6 +57,13 @@
 - `shared_preferences`도 앱의 Windows 식별자/저장 경로에 의존하므로 W2에서 runner 식별자를 별도로 설정하고, W4에서 실제 파일 위치를 확인한다.
 - Windows secure storage의 구형 Credential Manager 호환 읽기/자동 이전은 `useBackwardCompatibility: false`로 이미 비활성화되어 있다. 이 설정을 true로 바꾸지 않는다.
 
+### Windows 앱 식별자 분리 설계 (W2)
+- Windows `path_provider`는 실행 파일 VERSIONINFO의 `CompanyName\\ProductName` 조합으로 앱별 Application Support 경로를 만든다.
+- 따라서 secure storage(현재 Windows 플러그인은 application support directory에 암호화 파일을 저장)와 shared_preferences는 runner VERSIONINFO를 원본과 다르게 설정해 분리한다.
+- 테스트판 runner 식별자 제안: `CompanyName=RAWITS`, `ProductName=TWMT AI Test`, 실행 파일 `TWMT_AI_Test.exe`.
+- 테스트판의 DB/config/log/cache 루트는 계속 명시적인 `%APPDATA%\\TWMT_AI_Test`를 사용한다. secure storage/shared_preferences는 runner identity 기반 경로 `%APPDATA%\\RAWITS\\TWMT AI Test`를 사용한다. 두 경로 모두 원본 `%APPDATA%\\com.github.slavyk82\\twmt`와 분리된다.
+- Inno Setup 설정은 건드리지 않는다. 첫 테스트 배포는 설치 프로그램이 아닌 ZIP만 사용한다.
+
 ### 이번 커밋에서 구현한 범위
 - `TWMT_ISOLATED_TEST_BUILD=true` compile-time define 추가.
 - 격리 빌드는 Windows에서 `%APPDATA%\\TWMT_AI_Test`를 전용 데이터 루트로 사용한다.
