@@ -36,3 +36,10 @@ Ollama `/api/tags` 설치 모델 동기화까지 병합했다. 신규 모델만 
 ## Ollama 사용 안내
 
 - `docs/OLLAMA_SETUP.md`: 로컬 Ollama 실행, 설치 모델 동기화, 앱 설정 및 기본 문제 해결.
+- `docs/WINDOWS_ISOLATED_TEST_BUILD.md`: 기존 설치판과 사용자 데이터를 보호하는 별도 Windows 테스트판 계획.
+
+## 다음 작업 — Windows 격리 테스트판
+- 전용 브랜치 `feature/windows-isolated-test-build`에서 준비 중.
+- 현재 코드의 Windows 디버그 데이터 경로가 기존 설치판과 공유됨을 확인했다. 테스트판 데이터 경로 격리를 최우선으로 구현한다.
+- Windows runner가 저장소에 없고, 기존 Inno Setup ID도 원본과 같으므로 식별자/패키징을 분리해야 한다.
+- 구현 후 수동 Windows 빌드 및 ZIP artifact를 준비한다. 기존 설치판은 변경하지 않는다.
